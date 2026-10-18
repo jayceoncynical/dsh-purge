@@ -1,7 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
+
+const require_ = createRequire(import.meta.url);
+
+// Windows 盘符绝对路径会被 ESM loader 当成协议（j:），必须先转成 file:// URL；
+// 目录还要解析到真实入口文件，否则 ESM 会拒绝目录导入。
+function importSpecifier(specifier) {
+  const isPath =
+    /^[a-zA-Z]:[\\/]/.test(specifier) || specifier.startsWith("\\\\") || specifier.startsWith("/");
+  if (!isPath) return specifier;
+  return pathToFileURL(require_.resolve(specifier)).href;
+}
+
 const { rewritePromptAssembly } = await import(
-  process.env.DSH_PURGE_IDENTITY_MODULE || "../lib/identity.js"
+  importSpecifier(process.env.DSH_PURGE_IDENTITY_MODULE || "../lib/identity.js")
 );
 
 function assembly(variables = { provider: "test", model: "test-model" }) {
@@ -45,9 +59,9 @@ test("a missing session cwd does not invent a working directory", () => {
 test("the host renderer accepts a suffix when only provider/model were registered", {
   skip: !process.env.DSH_SYSTEM_PROMPT_MODULE,
 }, async () => {
-  const { renderPrompt } = await import(process.env.DSH_SYSTEM_PROMPT_MODULE);
+  const { renderPrompt } = await import(importSpecifier(process.env.DSH_SYSTEM_PROMPT_MODULE));
   const input = assembly();
   assert.throws(() => renderPrompt(input), /unknown prompt variable.*cwd/);
   const result = rewritePromptAssembly(input, options("J:\\project {{literal}}"));
-  assert.equal(renderPrompt(result), "Your working directory is J:\\project {{literal}}.");
+  assert.equal(renderPrompt(result), "Follow the session working directory reported by the runtime context.");
 });
