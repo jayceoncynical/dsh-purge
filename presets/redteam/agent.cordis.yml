@@ -304,20 +304,19 @@
         provider: spawn
         toolName: subagent
         modelSelectionSettings: true
-        backgroundMode: continuable
         # 子智能体是角色执行者（信息收集/资产梳理/漏洞发现/漏洞利用/内网渗透），**必须是叶子节点**：
-        # 靠提示词劝"不要再往下委派"是软的——模型完全可以无视。这里直接把委派工具从子会话的
-        # 工具目录里摘掉，子智能体连看都看不到 subagent / subagent_fork / workflow / ralph。
-        # maxDepth 同时收成 1 作为二道保险（默认 3 层太深，会白吃并发预算与上下文）。
+        # 靠提示词劝"不要再往下委派"是软的——模型完全可以无视，所以用 maxDepth 硬拦。
+        # delegationDepthOf() 取 session.header.delegationDepth 与 agent.options.subagentDepth
+        # 的较大值，超过 maxDepth 即拒绝派发，子智能体拿不到第二层。
         maxDepth: 1
-        # 注意：不能 deny `subagent` —— 它是这一行自己注册的 scoped 工具，不在全局工具库里，
-        # 写进 deny 会让 tools.restrict() 校验失败、整个委派路径报 "unknown global tool"（v0.8.0 踩过）。
-        # 子智能体拿不到 subagent_fork/workflow/ralph，加上 maxDepth: 1，实际已无派发能力。
-        toolFilter:
-          deny:
-            - subagent_fork
-            - workflow
-            - ralph
+        # 不再声明 toolFilter：
+        #   · 0.2.1-rc.2 起 dsh-tool-subagent 对它做 Object.hasOwn 硬拦
+        #     （"toolFilter is no longer supported"），只要出现这个键就抛错，
+        #     整个预设 mount 失败、模式下拉显示「加载失败」；
+        #   · 值是 undefined 也算「键存在」，所以不能靠 !!js 条件绕过，只能删；
+        #   · 0.2.1 没有等价物（allowedAgentPresets 是给子智能体选预设，不是摘工具）。
+        # 代价：子智能体仍能在工具列表里看到 subagent_fork / workflow / ralph，
+        # 但 maxDepth: 1 会拦住实际调用，叶子约束不丢。
 
     # Fork omits model selection so provider/model stay equal to the parent and
     # the inherited history remains eligible for KV Cache reuse. This preset
@@ -329,7 +328,8 @@
       config:
         provider: fork
         toolName: subagent_fork
-        backgroundMode: continuable
+        # 不写 backgroundMode：0.2.1-rc.2 已从 Config 删除该字段，全树无引用，
+        # 后台模式改由 provider 能力决定。写在这里只会被静默忽略。
 
     # Production dsh does not install these optional providers. Install the
     # matching Bundle in this Profile and restart the Host, then copy this
@@ -341,7 +341,6 @@
       config:
         provider: codex
         toolName: subagent_codex
-        backgroundMode: one-shot
         maxDepth: provider-managed
 
     - id: tool-subagent-claude-code
@@ -350,7 +349,6 @@
       config:
         provider: claude-code
         toolName: subagent_claude_code
-        backgroundMode: one-shot
         maxDepth: provider-managed
 
     - id: workflow-worker-thread
