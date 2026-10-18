@@ -28,7 +28,12 @@
   config:
     includeHarnessIdentity: false
     personaPrefix: ""
-    personaSuffix: Your working directory is {{cwd}}.
+    # 不写 personaSuffix：工作目录由宿主自己提供。
+    # 0.2.0 由 dsh-web-app 的 personaSuffix + dsh-agent-loop 注册的 cwd 变量提供；
+    # 0.2.1 起 dsh-agent-loop 不再注册 cwd，改由 dsh-working-directory 的
+    # working-directory:current context 提供（interpolate: false，required: true）。
+    # 插件一旦写死 {{cwd}}，宿主删掉变量注册就会让整轮渲染抛
+    # unknown prompt variable，消息直接发不出去。
 
 - id: dsh-purge
   inject: [systemPrompt, tools]
