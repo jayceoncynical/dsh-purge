@@ -1,3 +1,25 @@
+# 1.1.73
+
+## 中文
+
+- 版本 **1.1.73**：修复 1.1.72 在官方 0.2.x 上暴露的兼容回归与预设迁移问题。
+- 旧红队预设含 `toolFilter` / `persona` 时不再自动整份覆盖：改为 YAML 节点级就地迁移，只处理 `tool-subagent` 与 `workflow` / `ralph` 行，跳过块标量正文；写入前重新解析，整体重建前备份，备份失败取消重建。
+- 官方 0.2.0 没有 `working-directory:current` 上下文时，persona suffix 写入实际会话目录并设 `interpolate: false`；0.2.1 继续使用宿主必需上下文，不重复目录。
+- 红队预设恢复 `backgroundMode: continuable`（0.2.0 需要，0.2.1 保留但不报错）；spawn 与 fork 都显式 `maxDepth: 1`，并禁用会绕过限深的 `workflow` / `ralph`。
+- `#32` Web 面常量行替换改为负向前瞻，连续应用不再追加注释。
+- 兼容探测器按端面、宿主版本和实检状态过滤失效项；空目录返回 2，真失效返回 1。
+- Windows 解包回滚的 rename 增加 `EPERM` / `EBUSY` 短暂重试。
+
+## English
+
+- **1.1.73** fixes compatibility regressions and preset migration exposed on official 0.2.x.
+- Existing redteam presets with `toolFilter` / `persona` are migrated in place instead of being overwritten: only `tool-subagent` and `workflow` / `ralph` rows are touched, block-scalar bodies are skipped, the result is re-parsed before writing, and a whole-template rebuild requires a successful backup.
+- On official 0.2.0, the persona suffix now carries the actual session directory with `interpolate: false` when `working-directory:current` is absent; 0.2.1 keeps the host's required context without duplicating it.
+- The redteam preset restores `backgroundMode: continuable` for 0.2.0 (0.2.1 preserves it harmlessly), sets `maxDepth: 1` on both spawn and fork, and disables `workflow` / `ralph`, which bypass the depth cap.
+- The `#32` Web-surface constant replacement uses a negative lookahead, so repeated applies no longer append the marker.
+- The compatibility probe filters dead patterns by surface, host version, and live status; an empty tree exits 2 and a real failure exits 1.
+- Windows rollback renames retry transient `EPERM` / `EBUSY`.
+
 # 1.1.72
 
 ## 中文
