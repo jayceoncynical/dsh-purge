@@ -8623,18 +8623,22 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
 			useEffect(() => {
 				let dead = false;
 				let warnedMiss = false;
+				let announcedMount = false;
 				const ensure = () => {
 					if (dead || typeof document === "undefined") return;
 					/* 多路挂点兜底:data-* 优先,ARIA / class 子串兜底 */
 					const row =
 						document.querySelector("[data-conversation-tabs]") ||
 						document.querySelector("[data-conversation-tabrow]") ||
+						/* 0.2.1-rc.2 起会话区换成 dockkit 标签条 */
+						document.querySelector("[data-dockkit-strip-tabs]") ||
+						document.querySelector("[data-dockkit-strip]") ||
 						document.querySelector("[role='tablist'][aria-label*='对话' i]") ||
 						document.querySelector("[class*='conversation' i][class*='tab' i][class*='row' i]");
 					if (!row) {
 						if (!warnedMiss) {
 							warnedMiss = true;
-							try { console.warn("[dsh-purge] TabRowPurgeMount: tab row anchor missing"); } catch { /* ignore */ }
+							try { console.debug("[dsh-purge] tab row anchor absent; falling back to floating dock"); } catch { /* ignore */ }
 						}
 						setHost((prev) => (prev ? null : prev));
 						return;
@@ -8646,6 +8650,16 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
 						el.className = "dshp-tab-chip";
 						el.setAttribute("data-testid", "dsh-purge-tab-chip");
 						row.appendChild(el);
+					}
+					if (!announcedMount) {
+						announcedMount = true;
+						try {
+							const where = row.getAttribute("data-dockkit-strip-tabs")
+								|| row.getAttribute("data-conversation-tabs")
+								|| row.className
+								|| row.tagName;
+							console.debug("[dsh-purge] tab chip mounted:", where);
+						} catch { /* ignore */ }
 					}
 					setHost((prev) => (prev === el ? prev : el));
 				};

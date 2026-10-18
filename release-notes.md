@@ -1,3 +1,27 @@
+# 1.1.72
+
+## 中文
+
+- 版本 **1.1.72**：适配官方 **dsh 0.2.1-rc.2**，同时保留 0.2.0-rc.2。
+- 修「点应用 → 立即重启」报**清洗没有写进全部宿主，已取消重启**：0.2.1-rc.2 重写了 `dsh-system-prompt` 的 `assemble()` 尾段（waterfall 与 return 之间多了 `requiredContexts`），#40 的六条 pattern 全部落空，`complete prompt keeps inject` 写不进宿主，重启校验判 false。本版新增该尾段的整段替换，并保留 `requiredContexts` 的 context 收窄语义。
+- Web 面身份句在 0.2.1-rc.2 整体搬到新包 `dsh-harness-dev-context`：#32、#53 增加该目标文件与新句式，`web-app` 侧只剩变量描述也一并中和。
+- 0.2.1-rc.2 删掉了 `dsh-hooks-claude-code`、`dsh-hooks-codex`：#30 / #31 / #64 / #65 标记 `absentSince: 0.2.1`，在 0.2.1 上按「宿主无此功能」显示不适用，不再算补丁失败。
+- 新增宿主版本自适应：`hostDshVersion()` / `hostAtLeast()`，补丁可按版本裁剪，避免 0.2.0 与 0.2.1 的句式互相污染。
+- 新增 `scripts/probe-dsh-compat.mjs`：对着任意 `@deepseek-ai` 目录跑全部补丁，`--baseline` 直接列出「旧版命中、新版归零」的真回归，升级前先跑一遍再改代码。
+- 前端挂点补上 0.2.1 的 `data-dockkit-strip-tabs` 标签条；找不到锚点从 `warn` 降为 `debug`，并补一条挂载成功日志。
+- `dsh.client.inject` 去掉已删除的 `dsh-client-ui-slots`、从不存在的 `dsh-client-runtime`，改列 `dsh-client-ui-layout`；`dshTarget` 标为 `0.2.0-rc.2 || 0.2.1-rc.2`。
+
+## English
+
+- **1.1.72** targets official **dsh 0.2.1-rc.2** and keeps 0.2.0-rc.2 working.
+- Fixes Apply → restart aborting with "patches were not written into every host": 0.2.1-rc.2 rewrote the tail of `dsh-system-prompt`'s `assemble()` (a `requiredContexts` block now sits between the waterfall and the return), so every #40 pattern missed and the `complete prompt keeps inject` marker never landed. Adds a whole-tail replacement that preserves the new context narrowing.
+- The Web identity paragraph moved to the new `dsh-harness-dev-context` package: #32 and #53 gained that target plus the new sentence, and the remaining `web-app` variable description is neutralized too.
+- 0.2.1-rc.2 dropped `dsh-hooks-claude-code` / `dsh-hooks-codex`: #30 / #31 / #64 / #65 carry `absentSince: 0.2.1` and report not-applicable instead of failed.
+- Host-version gating (`hostDshVersion`, `hostAtLeast`) so patches are selected per release instead of matching both lines blindly.
+- New `scripts/probe-dsh-compat.mjs`: runs every patch against any `@deepseek-ai` tree; `--baseline` lists the patterns that used to match and no longer do.
+- Adds the 0.2.1 `data-dockkit-strip-tabs` anchor, demotes the missing-anchor warning to debug, and logs a successful mount.
+- `dsh.client.inject` drops the removed `dsh-client-ui-slots` and the never-shipped `dsh-client-runtime`, adds `dsh-client-ui-layout`; `dshTarget` becomes `0.2.0-rc.2 || 0.2.1-rc.2`.
+
 # 1.1.71
 
 ## 中文
