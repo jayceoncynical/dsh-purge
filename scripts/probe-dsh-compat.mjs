@@ -66,12 +66,18 @@ process.env.DSH_HOME = home;
 const core = await import(pathToFileURL(path.join(root, "lib", "core.js")).href);
 const hostClean = await import(pathToFileURL(path.join(root, "lib", "host-clean.js")).href);
 
+// 空目录 / 非 @deepseek-ai 根没有可评估目标。以前这种输入会以 0 退出，
+// 并把“没有目标文件”误读成“所有补丁都失效”。
+const initialFiles = core.targetFiles(base, home);
+const targetKeyCount = Object.values(initialFiles).flat().filter(Boolean).length;
+if (targetKeyCount === 0) {
+  console.error(`未找到可评估的 @deepseek-ai 目标文件：${base}`);
+  console.error("请传包含 dsh-system-prompt / dsh-agent-instructions 的安装树。");
+  process.exit(2);
+}
+
 /** 只读统计一棵树上每条 replacement 的命中次数。 */
-function collectRows(aiBase) {
-  const files = core.targetFiles(aiBase, home);
-  const emptyKeys = Object.entries(files)
-    .filter(([, value]) => (Array.isArray(value) ? value.length === 0 : !value))
-    .map(([key]) => key);
+function collectRows(aiBase, files = core.targetFiles(aiBase, home)) {
   const rows = [];
   for (const patch of core.ALL_PATCHES) {
     const keys = Array.isArray(patch.file) ? patch.file : [patch.file];
@@ -104,6 +110,8 @@ function collectRows(aiBase) {
       name: patch.name,
       optional: patch.optional === true,
       absentSince: patch.absentSince || "",
+      applicable: core.patchAppliesHere(patch, args.surface),
+      absent: Boolean(patch.absentSince) && core.hostAtLeast(patch.absentSince, aiBase),
       fileCount: paths.length,
       patternCount: hits.length,
       hits,
@@ -111,7 +119,7 @@ function collectRows(aiBase) {
       deadPatterns: hits.filter((n) => n === 0).length,
     });
   }
-  return { emptyKeys, rows };
+  return { rows };
 }
 
 /** 旧版命中 >0、新版归零的 pattern：升级后必须补的适配点。 */
@@ -120,7 +128,9 @@ function diffRows(oldRows, newRows) {
   const out = [];
   for (const row of oldRows) {
     const other = byId.get(row.id);
-    if (!other) continue;
+    if (!other || !row.applicable) continue;
+    // 新版当前端不适用 / 已被宿主删除的包，不算 pattern 回归。
+    if (!other.applicable || other.absent) continue;
     row.hits.forEach((before, index) => {
       const after = other.hits[index] ?? 0;
       if (before > 0 && after === 0) {
@@ -140,7 +150,8 @@ function diffRows(oldRows, newRows) {
   return out;
 }
 
-const current = collectRows(base);
+const statusBefore = await core.patchStatus(base, core.ALL_PATCHES);
+const current = collectRows(base, initialFiles);
 const version = core.hostDshVersion(base);
 const baseVersion = baseline ? core.hostDshVersion(baseline) : "";
 
@@ -149,9 +160,11 @@ if (baseline) regressions = diffRows(collectRows(baseline).rows, current.rows);
 
 let applyReport = null;
 let keepsInject = null;
+let statusForReport = statusBefore;
 if (args.apply) {
   const applied = await core.applyPatches(base, core.ALL_PATCHES, {});
   const live = await core.patchStatus(base, core.ALL_PATCHES);
+  statusForReport = live;
   applyReport = applied.map((row) => ({ ...row, status_now: live[row.patch_id] || "" }));
   try {
     keepsInject = hostClean.hostPromptKeepsInject(
@@ -162,7 +175,8 @@ if (args.apply) {
   }
 }
 
-const isHard = (row) => !row.optional && !row.absentSince;
+const isHard = (row) => !row.optional && !row.absent;
+const settled = (id) => ["applied", "already", "na", "skipped"].includes(statusForReport[id]);
 
 // 已打补丁的树上 pattern 必然零命中，那种"全死"不是回归，是量错了对象。
 const PATCH_MARKERS = ["dsh-purge", "physical CLI support runtime", "[dsh-purge]"];
@@ -179,7 +193,12 @@ function looksAlreadyPatched(aiBase) {
   return false;
 }
 
-const alreadyPatched = looksAlreadyPatched(base);
+const alreadyPatched = typeof core.hostCleanMarkersPresent === "function"
+  ? core.hostCleanMarkersPresent(base)
+  : looksAlreadyPatched(base);
+const unresolvedTargets = current.rows.filter((row) => (
+  row.applicable && !row.absent && (row.fileCount === 0 || statusForReport[row.id] === "missing_file")
+));
 
 const result = {
   base,
@@ -189,11 +208,27 @@ const result = {
   baseline: baseline || null,
   baselineVersion: baseline ? baseVersion || "(unknown)" : null,
   alreadyPatched,
-  emptyTargetKeys: current.emptyKeys,
-  deadHardPatches: current.rows.filter((row) => row.patternCount > 0 && row.totalHits === 0 && isHard(row)),
-  deadOptionalPatches: current.rows.filter(
-    (row) => row.patternCount > 0 && row.totalHits === 0 && !isHard(row) && !row.absentSince,
-  ),
+  targetKeyCount,
+  statusById: statusForReport,
+  deadHardPatches: current.rows.filter((row) => (
+    row.applicable
+    && !row.absent
+    && row.fileCount > 0
+    && row.patternCount > 0
+    && row.totalHits === 0
+    && isHard(row)
+    && !settled(row.id)
+  )),
+  deadOptionalPatches: current.rows.filter((row) => (
+    row.applicable
+    && !row.absent
+    && row.fileCount > 0
+    && row.patternCount > 0
+    && row.totalHits === 0
+    && !isHard(row)
+    && !settled(row.id)
+  )),
+  unresolvedTargets,
   regressions,
   applyReport,
   restartGate: applyReport
@@ -232,9 +267,10 @@ if (args.json) {
     console.log("注意: 这棵树已经带着本插件的补丁痕迹，pattern 零命中属于预期，不能当回归读。");
     console.log("      要判断兼容性请对未打补丁的原始包跑本脚本。");
   }
-  console.log(result.emptyTargetKeys.length
-    ? `宿主缺少的目标键: ${result.emptyTargetKeys.join(", ")}`
-    : "目标键: 全部解析成功");
+  console.log(`目标入口: ${result.targetKeyCount} 个`);
+  if (result.unresolvedTargets.length) {
+    console.log(`未解析目标 (${result.unresolvedTargets.length}，不计入失效): ${result.unresolvedTargets.map((r) => `#${r.id}`).join(", ")}`);
+  }
 
   if (regressions) {
     console.log("");
@@ -279,3 +315,7 @@ if (args.json) {
     }
   }
 }
+
+// 只有“真的该命中却归零”才返回失败；空目录/无目标在更早处已 exit 2。
+const hardFailures = result.deadHardPatches.length + (result.regressions?.length ?? 0);
+if (hardFailures > 0 || (applyReport !== null && keepsInject !== true)) process.exitCode = 1;

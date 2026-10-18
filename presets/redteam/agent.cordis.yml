@@ -309,14 +309,17 @@
         # delegationDepthOf() 取 session.header.delegationDepth 与 agent.options.subagentDepth
         # 的较大值，超过 maxDepth 即拒绝派发，子智能体拿不到第二层。
         maxDepth: 1
+        # 0.2.0 仍读取这个键；缺省 one-shot 会让子代理变成前台阻塞调用。
+        # 0.2.1 的 Config 不认识它，但会原样保留、不报错，所以两版可以共用一份预设。
+        backgroundMode: continuable
         # 不再声明 toolFilter：
         #   · 0.2.1-rc.2 起 dsh-tool-subagent 对它做 Object.hasOwn 硬拦
         #     （"toolFilter is no longer supported"），只要出现这个键就抛错，
         #     整个预设 mount 失败、模式下拉显示「加载失败」；
         #   · 值是 undefined 也算「键存在」，所以不能靠 !!js 条件绕过，只能删；
         #   · 0.2.1 没有等价物（allowedAgentPresets 是给子智能体选预设，不是摘工具）。
-        # 代价：子智能体仍能在工具列表里看到 subagent_fork / workflow / ralph，
-        # 但 maxDepth: 1 会拦住实际调用，叶子约束不丢。
+        # 叶子约束由 maxDepth: 1 + 下面禁用 workflow / ralph 共同保证；
+        # 不要再声称“子智能体看不到 subagent_fork”。
 
     # Fork omits model selection so provider/model stay equal to the parent and
     # the inherited history remains eligible for KV Cache reuse. This preset
@@ -328,8 +331,10 @@
       config:
         provider: fork
         toolName: subagent_fork
-        # 不写 backgroundMode：0.2.1-rc.2 已从 Config 删除该字段，全树无引用，
-        # 后台模式改由 provider 能力决定。写在这里只会被静默忽略。
+        # fork 也必须显式限深：不写 maxDepth 时会继承宿主的递归预算。
+        maxDepth: 1
+        # 0.2.0 需要它保持 continuable；0.2.1 忽略但不报错。
+        backgroundMode: continuable
 
     # Production dsh does not install these optional providers. Install the
     # matching Bundle in this Profile and restart the Host, then copy this
@@ -363,11 +368,17 @@
       config:
         provider: spawn
 
+    # workflow 的 startChild() 不传 maxDepth，host 的 resolveChildDepth 对
+    # undefined 不做上限；ralph 复用同一个 workflow 引擎。只要这两个工具还在，
+    # 子智能体就能绕过 spawn/fork 的 maxDepth: 1。红队执行者要求叶子节点，
+    # 因此在这里禁用；需要编排时用普通 subagent 调用。
     - id: tool-workflow
       name: '@deepseek-ai/dsh-tool-workflow'
+      disabled: true
 
     - id: tool-ralph
       name: '@deepseek-ai/dsh-tool-ralph'
+      disabled: true
       config:
         subagentProvider: spawn
         maxRounds: 64
