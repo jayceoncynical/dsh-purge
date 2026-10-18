@@ -163,6 +163,24 @@ if (args.apply) {
 }
 
 const isHard = (row) => !row.optional && !row.absentSince;
+
+// 已打补丁的树上 pattern 必然零命中，那种"全死"不是回归，是量错了对象。
+const PATCH_MARKERS = ["dsh-purge", "physical CLI support runtime", "[dsh-purge]"];
+function looksAlreadyPatched(aiBase) {
+  for (const fp of Object.values(core.targetFiles(aiBase, home)).flat()) {
+    if (typeof fp !== "string") continue;
+    try {
+      const text = fs.readFileSync(fp, "utf8");
+      if (PATCH_MARKERS.some((marker) => text.includes(marker))) return true;
+    } catch {
+      // 读不到就当没有标记
+    }
+  }
+  return false;
+}
+
+const alreadyPatched = looksAlreadyPatched(base);
+
 const result = {
   base,
   home,
@@ -170,6 +188,7 @@ const result = {
   hostVersion: version || "(unknown)",
   baseline: baseline || null,
   baselineVersion: baseline ? baseVersion || "(unknown)" : null,
+  alreadyPatched,
   emptyTargetKeys: current.emptyKeys,
   deadHardPatches: current.rows.filter((row) => row.patternCount > 0 && row.totalHits === 0 && isHard(row)),
   deadOptionalPatches: current.rows.filter(
@@ -209,6 +228,10 @@ if (args.json) {
   console.log(`版本: ${result.hostVersion}   面: ${result.surface}   home: ${result.home}`);
   if (result.baseline) console.log(`基线: ${result.baseline} (${result.baselineVersion})`);
   console.log("");
+  if (result.alreadyPatched) {
+    console.log("注意: 这棵树已经带着本插件的补丁痕迹，pattern 零命中属于预期，不能当回归读。");
+    console.log("      要判断兼容性请对未打补丁的原始包跑本脚本。");
+  }
   console.log(result.emptyTargetKeys.length
     ? `宿主缺少的目标键: ${result.emptyTargetKeys.join(", ")}`
     : "目标键: 全部解析成功");
