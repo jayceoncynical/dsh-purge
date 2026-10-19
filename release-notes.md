@@ -1,3 +1,27 @@
+# 1.1.74
+
+## 中文
+
+- 版本 **1.1.74**：把系统提示词送进模型的原生 system 槽，不再塞进最后一条 user 消息。移植自上游 1.1.72 的 #89–#92，并按 0.2.1-rc.2 的实际代码形状重写。
+- **#89 `SYSTEM_FIELD_EXTRACT`**：`buildRequest()` 把 `role: "system"` 的消息抽出来合并成独立的 `system` 字段，`messages` 里只留非 system 消息。原来系统提示词混在对话历史里，模型容易把它当成用户说过的话；抽出来之后走请求级字段，语义干净。
+- **#90 `OPENAI_NATIVE_SYSTEM_ROLE`**：openai-completions 把 `systemPrompt` 折进 `messages[0].role = "system"`（`/chat/completions` 的原生槽），不再拼到最后一条 user 前面。顺带剥掉 ChatML 残留标记（`<|im_start|>system:`、`<|im_end|>`、`<project_instructions>`）。
+- **#91 `ANTHROPIC_NATIVE_PARAMS_SYSTEM`**：anthropic-messages 优先读 `context.systemPrompt`，写入顶层 `params.system`（`/messages` 的原生槽），同样剥掉 ChatML 残留。原来只有 `context.system` 和首条 system 消息两条路，`systemPrompt` 会被丢掉。
+- **#92 `SUBAGENT_SAME_INJECT_PATH`**：子代理创建时立刻调用 `globalThis.__dshPurgePrepareAssemble`，父会话怎么挂注入，子代理就怎么挂，不再靠「第一次发送前」才补。同时把子代理的 `permissionPreset` 从 `auto || danger-full-access ? preset : undefined` 改成 `preset || "danger-full-access"`，父会话放行的权限子代理直接继承。
+- **`resolveInjectText()` 优先级反转**：改成 **磁盘 `prompt-inject.md` 优先** > 本进程未落盘 > 内置。原来进程内缓存排在前面，用户点保存写完文件却不生效，得重启才认。
+- 新增 `tests/system-slot-patches.test.mjs`：覆盖 #89–#92 的命中、替换结果和二次应用幂等性。
+- 全量 39 项测试通过；#89–#92 已在 0.2.1-rc.2 真实宿主文件上验证 1/1、3/3、3/3、2/2 全部命中，打完后语法校验通过、二次应用全部 `already`。
+
+## English
+
+- **1.1.74** routes the system prompt into the model's native system slot instead of stuffing it into the last user message. Ported from upstream 1.1.72's #89–#92 and rewritten against the real 0.2.1-rc.2 code shape.
+- **#89 `SYSTEM_FIELD_EXTRACT`**: `buildRequest()` lifts `role: "system"` messages into a dedicated `system` field and leaves only non-system messages in `messages`. The prompt used to sit inside conversation history, where the model could read it as something the user said.
+- **#90 `OPENAI_NATIVE_SYSTEM_ROLE`**: openai-completions folds `systemPrompt` into `messages[0].role = "system"` (the native `/chat/completions` slot) rather than prepending it to the last user turn, and strips leftover ChatML markers (`<|im_start|>system:`, `<|im_end|>`, `<project_instructions>`).
+- **#91 `ANTHROPIC_NATIVE_PARAMS_SYSTEM`**: anthropic-messages prefers `context.systemPrompt` and writes it to top-level `params.system` (the native `/messages` slot), stripping the same markers. Previously only `context.system` and the first system message were read, so `systemPrompt` was dropped.
+- **#92 `SUBAGENT_SAME_INJECT_PATH`**: subagents call `globalThis.__dshPurgePrepareAssemble` at creation time, so a child hangs the inject exactly the way its parent does instead of waiting for the first send. The child `permissionPreset` changes from `auto || danger-full-access ? preset : undefined` to `preset || "danger-full-access"`, inheriting the parent's granted access.
+- **`resolveInjectText()` priority inverted**: on-disk `prompt-inject.md` now wins over the in-process override, which wins over the bundled default. Saving the file used to lose to a stale in-memory copy until restart.
+- Adds `tests/system-slot-patches.test.mjs`, covering match, replacement result, and second-pass idempotence for #89–#92.
+- All 39 tests pass. #89–#92 hit 1/1, 3/3, 3/3, and 2/2 against the real 0.2.1-rc.2 host files, the patched files pass a syntax check, and a second apply reports `already` for every one.
+
 # 1.1.73
 
 ## 中文
