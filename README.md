@@ -176,13 +176,13 @@ Web and the official desktop EXE are the two maintained hosts. **Install both. A
 **Web (official `dsh web`)**
 
 ```sh
-dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip
+dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz
 ```
 
 **Desktop (official EXE)**
 
 ```sh
-dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip
+dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz
 ```
 
 If this directory is already a clone, use `add .` instead of the URL. If `dsh` is not on PATH, use [Manual install](#manual).
@@ -227,13 +227,13 @@ If `dsh` is not on PATH, tell the user and stop. If this directory is already a 
 **Web (official `dsh web`)**
 
 ```sh
-dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip
+dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz
 ```
 
 **Desktop (official EXE)**
 
 ```sh
-dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip
+dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz
 ```
 
 After the commands finish, tell the user to fully quit and restart `dsh web`, and to quit the desktop tray then reopen the EXE. On each host, open **dsh-purge** beside the session title and **Apply** on **Clean**. Then stop.
@@ -274,7 +274,7 @@ $cands | Select-Object -Unique | Where-Object { $_ -and (Test-Path (Join-Path $_
 git clone git@github.com:jayceoncynical/dsh-purge.git "$DSH_HOME/plugins/dsh-purge"
 ```
 
-The repository is private, so cloning needs access. Without access: download [dsh-purge-1.1.74.zip](https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip), extract, rename `dsh-purge-1.1.74` → `dsh-purge`, and place it under `plugins`. If you already have a copy, copy the whole tree — not a few `.js` files.
+The repository is private, so cloning needs access. Without access: download [dsh-purge-1.1.74.tar.gz](https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz), extract, rename `dsh-purge-1.1.74` → `dsh-purge`, and place it under `plugins`. If you already have a copy, copy the whole tree — not a few `.js` files.
 
 **3. Edit only that profile's `package.json` — back it up first.** Web → `$DSH_HOME/profiles/web/package.json`; desktop → `$DSH_HOME/profiles/desktop/package.json`. Add **only two things**, keeping every existing dependency and bundle:
 
@@ -579,7 +579,7 @@ What changed, and the zip, are on the public mirror's [Releases](https://github.
 - Scope is rendered copy, defaults, and runtime logic inside local `@deepseek-ai/*` packages, plus override files and rule sets under the harness home.
 - After an upgrade, unmatched originals show as skipped. Apply still completes, and those files are left unchanged.
 - Third-party plugin *source repos* outside `@deepseek-ai` are left alone (CMD silence may **best-effort** patch installed doctor / market / liangshen / mnemon at runtime).
-- Install from the public release mirror `dsh-purge-dist`: `dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip` or `dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip`. From this repo, `add .`. There is no npm package.
+- Install from the public release mirror `dsh-purge-dist`: `dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz` or `dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz`. From this repo, `add .`. There is no npm package.
 
 ---
 

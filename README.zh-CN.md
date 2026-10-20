@@ -176,13 +176,13 @@ Harness 不只是把问题交给模型。它还会在运行时改提示词、审
 **Web（官方 `dsh web`）**
 
 ```sh
-dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip
+dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz
 ```
 
 **桌面端（官方 EXE）**
 
 ```sh
-dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip
+dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz
 ```
 
 当前目录已经是本仓库时，把地址换成 `add .`。`dsh` 不在 PATH 时走 [手动安装](#manual)。
@@ -229,13 +229,13 @@ Web 的控件只动 Web，桌面端的只动桌面应用。不要在一个宿主
 **Web 端（官方 `dsh web`）**
 
 ```sh
-dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip
+dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz
 ```
 
 **桌面端（官方 EXE）**
 
 ```sh
-dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip
+dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz
 ```
 
 命令结束后，提醒用户：Web 完全退出并重启 `dsh web`；桌面端退出托盘再打开 EXE。各自点会话标题旁的 **dsh-purge**，在「清洗」里点「应用」。然后停止。
@@ -276,7 +276,7 @@ $cands | Select-Object -Unique | Where-Object { $_ -and (Test-Path (Join-Path $_
 git clone git@github.com:jayceoncynical/dsh-purge.git "$DSH_HOME/plugins/dsh-purge"
 ```
 
-仓库已私有，clone 需要你有该仓库的访问权。没有权限就走下面这条：下载 [dsh-purge-1.1.74.zip](https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip)，解压后把 `dsh-purge-1.1.74` 改名为 `dsh-purge`，整夹放到 `plugins` 下。已有副本就复制整个目录，不要只拷几个 `.js`。
+仓库已私有，clone 需要你有该仓库的访问权。没有权限就走下面这条：下载 [dsh-purge-1.1.74.tar.gz](https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz)，解压后把 `dsh-purge-1.1.74` 改名为 `dsh-purge`，整夹放到 `plugins` 下。已有副本就复制整个目录，不要只拷几个 `.js`。
 
 **3. 只改对应 profile 的 `package.json`，先备份。** Web → `$DSH_HOME/profiles/web/package.json`；桌面 → `$DSH_HOME/profiles/desktop/package.json`。**只追加两处**，原有依赖和 bundle 全部留着：
 
@@ -590,7 +590,7 @@ flowchart LR
 - 改动范围是本机 `@deepseek-ai/*` 包里的渲染文案、默认策略和执行逻辑，以及用户目录下的覆盖文件与规则集。
 - 升级后原文对不上会显示跳过，这次应用仍算完成，不会乱改。
 - 不改动非 `@deepseek-ai` 的第三方插件源仓库（启动时的 CMD 无感会**尽力**修补已装的 doctor / market / 梁神 / mnemon，属运行时补丁）。
-- 安装走公开镜像 `dsh-purge-dist`：`dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip` 或 `dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.zip`。当前目录已是本仓库时 `add .`。npm 上没有这个包。
+- 安装走公开镜像 `dsh-purge-dist`：`dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz` 或 `dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz`。当前目录已是本仓库时 `add .`。npm 上没有这个包。
 
 ---
 

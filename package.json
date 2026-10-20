@@ -76,9 +76,8 @@
     },
     "install": {
       "preferred": "tarball",
-      "tarball": "https://github.com/jayceoncynical/dsh-purge/archive/refs/heads/master.tar.gz",
-      "zip": "https://github.com/jayceoncynical/dsh-purge/archive/refs/heads/master.zip",
-      "git": "https://github.com/jayceoncynical/dsh-purge.git"
+      "tarball": "https://github.com/jayceoncynical/dsh-purge-dist/releases/latest/download/dsh-purge-1.1.74.tar.gz",
+      "git": "https://github.com/jayceoncynical/dsh-purge-dist.git"
     }
   },
   "publishConfig": {

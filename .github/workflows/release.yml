@@ -16,6 +16,9 @@ jobs:
   release:
     if: github.repository == 'jayceoncynical/dsh-purge'
     runs-on: ubuntu-latest
+    env:
+      # 公开分发仓库；私有主仓库与它共用同一份产物
+      DIST_REPO: jayceoncynical/dsh-purge-dist
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,35 +31,114 @@ jobs:
           node --check lib/reapply.js
           node --input-type=module -e "import './lib/index.js'"
 
-      - name: Publish GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build release archive
+        id: build
         run: |
           set -euo pipefail
           version="$(node -p "require('./package.json').version")"
           tag="v${version}"
-          if gh release view "$tag" >/dev/null 2>&1; then
-            echo "already published: $tag"
-            exit 0
-          fi
           first="$(head -n 1 release-notes.md | tr -d '\r')"
           if [ "$first" != "# ${version}" ]; then
             echo "release-notes.md 第一行必须是 # ${version}，现在是: ${first}"
             exit 1
           fi
-          zip="dsh-purge-${version}.zip"
           if git rev-parse -q --verify "refs/tags/${tag}^{}" >/dev/null; then
             commit="$(git rev-parse "refs/tags/${tag}^{}")"
-            git archive --format=zip --prefix="dsh-purge-${version}/" --output="$zip" "$commit"
-            gh release create "$tag" --title "$tag" --notes-file release-notes.md
           else
-            git archive --format=zip --prefix="dsh-purge-${version}/" --output="$zip" HEAD
-            args=(release create "$tag" --target "$GITHUB_SHA" --title "$tag" --notes-file release-notes.md)
+            commit="$GITHUB_SHA"
+          fi
+          # DSH 的 install-spec 只认 .tgz / .tar.gz，zip 只给 dsh:// 深链用，两份都出
+          tgz="dsh-purge-${version}.tar.gz"
+          zip="dsh-purge-${version}.zip"
+          git archive --format=tar.gz --prefix="dsh-purge-${version}/" --output="$tgz" "$commit"
+          git archive --format=zip    --prefix="dsh-purge-${version}/" --output="$zip" "$commit"
+          test -s "$tgz"
+          test -s "$zip"
+          tgz_sha="$(sha256sum "$tgz" | cut -d' ' -f1)"
+          zip_sha="$(sha256sum "$zip" | cut -d' ' -f1)"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "tgz=${tgz}" >> "$GITHUB_OUTPUT"
+          echo "zip=${zip}" >> "$GITHUB_OUTPUT"
+          echo "tgz_sha=${tgz_sha}" >> "$GITHUB_OUTPUT"
+          echo "zip_sha=${zip_sha}" >> "$GITHUB_OUTPUT"
+          echo "built ${tgz} (${tgz_sha})"
+          echo "built ${zip} (${zip_sha})"
+
+      - name: Publish to private source repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="${{ steps.build.outputs.tag }}"
+          tgz="${{ steps.build.outputs.tgz }}"
+          zip="${{ steps.build.outputs.zip }}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "already published in source repo: $tag"
+            gh release upload "$tag" "$tgz" "$zip" --clobber
+            exit 0
+          fi
+          args=(release create "$tag" --title "$tag" --notes-file release-notes.md)
+          if git rev-parse -q --verify "refs/tags/${tag}^{}" >/dev/null; then
+            :
+          else
+            args+=(--target "$GITHUB_SHA")
+          fi
+          case "${{ steps.build.outputs.version }}" in
+            *beta*|*alpha*|*rc*) args+=(--prerelease) ;;
+          esac
+          gh "${args[@]}"
+          gh release upload "$tag" "$tgz" "$zip" --clobber
+          echo "published https://github.com/${GITHUB_REPOSITORY}/releases/tag/${tag}"
+
+      - name: Publish to public distribution repository
+        env:
+          GH_TOKEN: ${{ secrets.DIST_RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="${{ steps.build.outputs.tag }}"
+          version="${{ steps.build.outputs.version }}"
+          tgz="${{ steps.build.outputs.tgz }}"
+          zip="${{ steps.build.outputs.zip }}"
+          tgz_sha="${{ steps.build.outputs.tgz_sha }}"
+          zip_sha="${{ steps.build.outputs.zip_sha }}"
+          notes="$(mktemp)"
+          # dist 仓库没有源码，说明里只放本版段落 + 安装地址 + 校验值。
+          # 安装一律用 .tar.gz：DSH 的 install-spec 只认 .tgz / .tar.gz，zip 仅供 dsh:// 深链。
+          {
+            awk -v ver="# ${version}" '
+              $0 == ver { inside = 1 }
+              inside && /^# / && $0 != ver { exit }
+              inside { print }
+            ' release-notes.md
+            echo ""
+            echo "---"
+            echo ""
+            echo "## 安装 / Install"
+            echo ""
+            echo '```bash'
+            echo "dsh plugin --profile web     add https://github.com/${DIST_REPO}/releases/download/${tag}/${tgz}"
+            echo "dsh plugin --profile desktop add https://github.com/${DIST_REPO}/releases/download/${tag}/${tgz}"
+            echo '```'
+            echo ""
+            echo "## 校验 / Verify"
+            echo ""
+            echo '```'
+            echo "${tgz}: ${tgz_sha}"
+            echo "${zip}: ${zip_sha}"
+            echo '```'
+          } > "$notes"
+          echo "dist notes bytes: $(wc -c < "$notes")"
+          if gh release view "$tag" --repo "$DIST_REPO" >/dev/null 2>&1; then
+            echo "release exists in dist repo: $tag — refreshing notes and assets"
+            gh release edit "$tag" --repo "$DIST_REPO" --notes-file "$notes"
+            gh release upload "$tag" "$tgz" "$zip" --repo "$DIST_REPO" --clobber
+          else
+            args=(release create "$tag" --repo "$DIST_REPO" --title "$tag" --notes-file "$notes" --target main)
             case "$version" in
               *beta*|*alpha*|*rc*) args+=(--prerelease) ;;
             esac
             gh "${args[@]}"
+            gh release upload "$tag" "$tgz" "$zip" --repo "$DIST_REPO" --clobber
           fi
-          test -s "$zip"
-          gh release upload "$tag" "$zip" --clobber
-          echo "published https://github.com/jayceoncynical/dsh-purge/releases/tag/${tag}"
+          echo "published https://github.com/${DIST_REPO}/releases/tag/${tag}"
