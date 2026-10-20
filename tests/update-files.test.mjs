@@ -32,7 +32,12 @@ async function fixture(t, count = 1) {
     await write(path.join(dest, "user-data", "config.json"), "user");
     await write(path.join(dest, "node_modules", "dependency", "index.js"), "dependency");
   }
-  return { root, source, dests };
+  // installUpdateFiles 内部把目标解析成 realpath 再回调 fault，所以断言侧的
+  // 故障注入也必须用 realpath 比较：Windows CI 的 os.tmpdir() 是 8.3 短名
+  // （C:\Users\RUNNER~1\...），真实路径是长名，直接比原字符串永远不相等，
+  // 故障注入会静默不触发，测试表现为 "Missing expected rejection"。
+  const realDests = await Promise.all(dests.map((dest) => fs.realpath(dest)));
+  return { root, source, dests, realDests };
 }
 async function assert_old(dest) {
   for (const name of COPY_NAMES) {
@@ -66,7 +71,7 @@ test("所有目标完整暂存后才开始提交，stage 失败不改旧文件",
   const f = await fixture(t, 2);
   await assert.rejects(installUpdateFiles(f.source, f.dests, {
     fault(phase, context) {
-      if (phase === "stage" && context.dest === f.dests[1] && context.name === "skills") throw new Error("stage failure");
+      if (phase === "stage" && context.dest === f.realDests[1] && context.name === "skills") throw new Error("stage failure");
     },
   }), /stage failure/);
   for (const dest of f.dests) {
@@ -90,7 +95,7 @@ test("第二目标失败也恢复第一目标全部资源", async (t) => {
   const f = await fixture(t, 2);
   await assert.rejects(installUpdateFiles(f.source, f.dests, {
     fault(phase, context) {
-      if (phase === "after-install" && context.dest === f.dests[1] && context.name === "bin") throw new Error("second destination failure");
+      if (phase === "after-install" && context.dest === f.realDests[1] && context.name === "bin") throw new Error("second destination failure");
     },
   }), /second destination failure/);
   for (const dest of f.dests) await assert_old(dest);
@@ -100,8 +105,8 @@ test("回滚失败保留唯一备份和日志，可幂等重试恢复", async (t
   const f = await fixture(t, 2);
   await assert.rejects(installUpdateFiles(f.source, f.dests, {
     fault(phase, context) {
-      if (phase === "after-install" && context.dest === f.dests[1] && context.name === "lib") throw new Error("commit failure");
-      if (phase === "rollback" && context.dest === f.dests[0] && context.name === "lib") throw new Error("rollback failure");
+      if (phase === "after-install" && context.dest === f.realDests[1] && context.name === "lib") throw new Error("commit failure");
+      if (phase === "rollback" && context.dest === f.realDests[0] && context.name === "lib") throw new Error("rollback failure");
     },
   }), /回滚未完成/);
   const work = path.join(f.dests[0], (await pending(f.dests[0]))[0]);
@@ -164,8 +169,8 @@ test("回滚在旧资源恢复后中断可重试，末尾截断记录不破坏�
   const script = `import { installUpdateFiles } from ${JSON.stringify(moduleUrl)};
     await installUpdateFiles(${JSON.stringify(f.source)}, ${JSON.stringify(f.dests)}, {
       fault(phase, context) {
-        if (phase === 'after-install' && context.dest === ${JSON.stringify(f.dests[1])} && context.name === 'bin') throw new Error('commit failure');
-        if (phase === 'after-restore' && context.dest === ${JSON.stringify(f.dests[0])} && context.name === 'LICENSE') process.exit(74);
+        if (phase === 'after-install' && context.dest === ${JSON.stringify(f.realDests[1])} && context.name === 'bin') throw new Error('commit failure');
+        if (phase === 'after-restore' && context.dest === ${JSON.stringify(f.realDests[0])} && context.name === 'LICENSE') process.exit(74);
       }
     });`;
   const result = spawnSync(process.execPath, ["--input-type=module", "-e", script], { stdio: "inherit" });
@@ -182,7 +187,7 @@ test("进程在 rename 后退出仍能通过日志恢复全部目标", async (t)
   const script = `import { installUpdateFiles } from ${JSON.stringify(moduleUrl)};
     await installUpdateFiles(${JSON.stringify(f.source)}, ${JSON.stringify(f.dests)}, {
       fault(phase, context) {
-        if (phase === 'after-backup' && context.dest === ${JSON.stringify(f.dests[1])} && context.name === 'lib') process.exit(73);
+        if (phase === 'after-backup' && context.dest === ${JSON.stringify(f.realDests[1])} && context.name === 'lib') process.exit(73);
       }
     });`;
   const result = spawnSync(process.execPath, ["--input-type=module", "-e", script], { stdio: "inherit" });
