@@ -363,7 +363,7 @@ backupExists=False
 
 已运行的现有测试：[runtime-cleanup.test.mjs](<../tests/runtime-cleanup.test.mjs>)、[desktop-cli-runtime.test.mjs](<../tests/desktop-cli-runtime.test.mjs>)。
 
-审查时使用 Node `v24.21.0`。隔离复现脚本没有作为持久测试提交；修复时需要将相应场景正式纳入测试集。
+审查时使用 Node `v24.21.0`。上表"复现缺陷"的场景现已全部固化为常驻测试（`store-integrity`、`archive-boundary`、`skill-read-boundary`、`atomic-write`、`update-files`、`desktop-swap-failure`、`report-parity`、`entry-import`、`flash-silence-split` 等），并纳入 `npm run check` 与双平台 CI。
 
 ### 已声明的边界（不是待办，改动前需重新评估）
 
@@ -383,7 +383,7 @@ backupExists=False
 
 ## 8. 修复后回看清单
 
-以下勾选项记录 2026-10-20 当天完成的修复轮次，修复未提交，等 Nono 审阅后自行提交。除前四批中 E03/E04 与运行时宿主矩阵实测外，其余目标均已完成并有隔离测试佐证。
+以下勾选项记录 2026-10-20 当天完成的修复轮次。所列改动均已提交，并随 **1.1.75** 正式发布（源仓库与 dist 仓库同步，产物核对通过）。四批目标全部完成，均有隔离测试或行为指纹等价佐证。
 
 - [x] R04 / R06：局部更新不再降级，非法状态不入库，重复导入不放大当前统计（[store-integrity.test.mjs](<../tests/store-integrity.test.mjs>)，8 项；无 FTS5 模式另跑 8 项通过）。
 - [x] R08：原子写改用随机临时名 + 独占创建，同目标并发串行化（[atomic-write.test.mjs](<../tests/atomic-write.test.mjs>)，4 项）。
@@ -391,9 +391,9 @@ backupExists=False
 - [x] R01 / R02：更新改为文件事务，资源清单补齐 presets/skills/scripts（[update-files.test.mjs](<../tests/update-files.test.mjs>)，10 项；清单与 package.json `files` 有断言绑定）。
 - [x] R05：换包脚本 `Move-Item` 使用终止错误并在置成功前验证源/备份（[desktop-swap-failure.test.mjs](<../tests/desktop-swap-failure.test.mjs>)）。
 - [x] R07 / E01：前端源码补齐请求错误处理、倒计时清理与延迟释放；`check:client` 一致性检查通过；新增 [ci.yml](<../.github/workflows/ci.yml>)（Linux/Windows × Node 22.13.0/24），发布流程引用验证并改为只允许发布当前提交对应版本号。
-- [x] E02：engines 提升为 `>=22.13.0`，README 两语言同步；宿主内嵌 Node 的实际矩阵仍需装机验证（见下）。
+- [x] E02：engines 提升为 `>=22.13.0`，README 两语言同步；宿主内嵌 Node 的实际能力已做只读探测，结论见下方"运行时矩阵"一条与 [runtime-matrix-2026-10-20.md](<../docs/runtime-matrix-2026-10-20.md>)。
 
-遗留事项：
+工程项与后续记录（均已完成）：
 
 - [x] E04（本轮）：新增 [bench-store.mjs](<../scripts/bench-store.mjs>)，三档数据量（50/500/2000 资产，最大 79,440 端口快照）锁住十项查询耗时基线；`npm run bench:store` 可复跑。大档下 stats≈72ms、assetChildren≈155ms、列表≈30ms，事件循环为同步阻塞但规模可控；数据库句柄按靶标缓存、close() 统一释放，无泄漏路径。造数含重复导入一轮，顺带覆盖 R06 去重的大数据量路径。
 - [x] E03：大文件拆分（五块完成）。`d8a3a25` 报告生成拆到 [report-gen.js](<../lib/redteam/report-gen.js>)（store-core 5135→4936）；`05b4308` 成果读取查询组拆到 [read-queries.js](<../lib/redteam/read-queries.js>)（8 个方法体迁出）；`fce9cec` 补丁定义表拆到 [patch-defs.js](<../lib/patch-defs.js>)（core.js 8400→4786）；`3fb0c75` 资产与概览查询组拆到 [asset-queries.js](<../lib/redteam/asset-queries.js>)（store-core 5140→4840，9 个方法 346 行）；`2169c88` 闪窗抑制组拆到 [flash-silence.js](<../lib/flash-silence.js>)（core.js 4786→3713，约 1078 行），并把散落的 `_patchTargetAiBase` 收进 [patch-target-state.js](<../lib/patch-target-state.js>)（写入只剩一个入口）。五块都以"先锁行为基线、再 side-by-side 双跑、指纹全等"收口；闪窗组因会写文件，改用"隔离端到端 + 静态符号完整性"双保险，并因此真实抓到 3 次漏导入。全量测试与基准同数量级。剩余可拆项：store-core 的写入路径（私有方法 `#observe`/`#upsertAsset` 等被 7 个以上写方法共用，再拆需先破封装，建议按需再做）。
@@ -402,3 +402,27 @@ backupExists=False
 - [x] reportTargets 口径已对齐：`b082453` 把按目标 `bySeverity` 补齐 low/info 键位，与 `report()` 结构一致；新增 [report-parity.test.mjs](<../tests/report-parity.test.mjs>) 三项，负向对照回退该行后 5 项失败。
 - [x] 两轮 CI 修复：`30b8bd3` 修正 update-files 故障注入用 realpath 比较（Windows 8.3 短名下注入静默失效，5 项失败）；`0843236` 让入口测试容忍干净 CI 无宿主，并补相对导入完整性检查。验证工作流此后在 Ubuntu/Windows × Node 22.13/24 全绿。
 - [x] 入口加载冒烟已补回：改造 `npm run check` 时丢失了 release.yml 原有的 `import './lib/index.js'` 检查，新增 [entry-import.test.mjs](<../tests/entry-import.test.mjs>) 覆盖入口与三个子入口可加载、四张补丁表装配一致、10 个委托方法存在，并用"删掉 import 应当失败"的负向对照验证过有效性（`8ac61f8`）。
+
+## 9. 发布记录
+
+| 版本 | 提交 | 内容 |
+| --- | --- | --- |
+| 1.1.75 | `5e2f005` | 本文档所列修复与拆分的正式发布：版本号、dist tarball 地址、两份 README 的安装命令与 `dsh://` 深链同步；release-notes 置顶 1.1.75 中英段落 |
+
+发布后核对：
+
+- 源仓库与 dist 仓库的 `v1.1.75` release 均已创建，tar.gz / zip 的 SHA256 一致（`ce82adb5…` / `d7b38e6c…`）。
+- 下载 dist 产物解包核对：包根 `dsh-purge-1.1.75`、`package.json` 版本 1.1.75、本轮新增的 8 个模块与 `presets`/`skills`/`scripts` 全部存在（即 R02 的漏更新问题在产物层面确认可用）。
+- 线上 release 说明已更新为含升级提醒与校验值的版本，不只是仓库文件。
+
+### 9.1 发版流程变更（`cfd6db6`）
+
+Release 工作流触发条件由"推 master"改为"推 `v*` tag"：
+
+- 发版动作固定为「改版本 → 打 tag → 推 tag」，发布的源码与标签指向永远是同一份；
+- 文档、CI 调整类提交不再触发 Release，也不会被版本守卫拦下报红（改之前每推一次 master 都会红一次）；
+- 验证工作流不受影响，仍随每次 push / PR 运行。
+
+### 9.2 升级提醒（已写入 release 说明）
+
+此前 ZIP 覆盖更新不含 `presets`/`skills`/`scripts`，这三个目录长期停留在安装时版本；1.1.75 起会随更新覆盖。用户若改过自定义预设、技能说明或环境脚本，升级前需备份——这条已同时写进仓库 `release-notes.md` 与两个仓库的线上 release 说明。
