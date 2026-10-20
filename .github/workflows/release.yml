@@ -1,9 +1,13 @@
 name: Release
 
 on:
+  # 只在推 tag 时发版：master 上的普通提交（文档、CI 调整）不应触发发布。
+  # 版本号写在 package.json，发版动作固定为「改版本 → 打 tag → 推 tag」，
+  # 这样"发布的源码"与"标签指向的源码"永远是同一份，也避免文档提交反复
+  # 触发 Release 再被版本守卫拦下。
   push:
-    branches:
-      - master
+    tags:
+      - 'v*'
 
 permissions:
   contents: write

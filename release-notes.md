@@ -11,6 +11,7 @@
 - **前端**：请求层补齐 HTTP 错误与非 JSON 响应处理（原先直接把解析异常抛给界面），倒计时定时器与下载 URL 释放改为可清理。
 - **工程**：新增 `lib/redteam/report-gen.js`、`read-queries.js`、`asset-queries.js`、`patch-defs.js`、`flash-silence.js` 五个模块，`core.js` 从 8400 行降到 3713 行；每块拆分都以行为指纹等价收口。新增数据量基准脚本、入口加载冒烟测试与双平台 CI 矩阵。
 - **测试**：全量 `npm run check` 123 项通过、1 项跳过（依赖本机宿主渲染器）。
+- **升级提醒（首次升到 1.1.75）**：此前 ZIP 覆盖更新不含 `presets`/`skills`/`scripts`，所以这三个目录一直是安装时的旧版；1.1.75 起更新会覆盖它们。如果你在这三个目录里改过文件（自定义预设、改过的技能说明、环境脚本），请先备份再更新，或更新后从备份取回自己的改动。`lib`/`bin`/`docs` 等受管目录同理，一直是整目录替换。
 - 运行时探测：桌面端与 `dsh web` 均为 Node 24.21.0，`node:sqlite` 与 FTS5 可用；`engines` 下限提到 `>=22.13.0`。
 
 ## English
@@ -24,6 +25,7 @@
 - **Frontend**: the request layer now handles HTTP errors and non-JSON bodies (it used to throw parse errors into the UI); countdown timers and download URLs are properly cleaned up.
 - **Engineering**: five new modules (`report-gen.js`, `read-queries.js`, `asset-queries.js`, `patch-defs.js`, `flash-silence.js`); `core.js` shrank from 8400 to 3713 lines. Every split was closed out with behavior-fingerprint equivalence. Added a data-scale benchmark, an entry-import smoke test, and a two-platform CI matrix.
 - **Tests**: full `npm run check` — 123 passing, 1 skipped (needs a local host renderer).
+- **Upgrade note (first hop to 1.1.75)**: the ZIP overlay used to skip `presets`/`skills`/`scripts`, so those folders stayed at whatever version you installed; from 1.1.75 they are updated too. If you edited files in them (custom presets, tweaked skill docs, environment scripts), back them up before updating — or restore your changes afterwards. The other managed entries (`lib`/`bin`/`docs`) have always been replaced wholesale.
 - Runtime probe: both the desktop app and `dsh web` run Node 24.21.0 with `node:sqlite` and FTS5 available; `engines` floor raised to `>=22.13.0`.
 
 # 1.1.74
