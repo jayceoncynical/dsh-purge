@@ -395,4 +395,5 @@ backupExists=False
 - [ ] 运行时矩阵：需在真实宿主（桌面端/`dsh web`）确认其内嵌 Node 满足 `node:sqlite` 要求；不满足时演练台不可用的提示是否清晰。
 - [ ] `update-files` 事务的已知限制已写在 [update-files.js](<../lib/update-files.js>) 头部注释：提交非整树瞬时可见、需单调用者串行、不保证断电目录元数据持久性；准备阶段中断保留现场待人工处理。
 - [ ] ZIP 预检收紧后明确拒绝：分卷/zip64、加密、UNIX 链接、重解析点、特殊路径扩展元数据、非 UTF-8 且无语言编码标记的名称。GitHub 分发包实测兼容；若未来上游分发包携带上述特征会被拒绝而非降级——这是有意的保守取舍。
-- [ ] 修复后全量 `npm run check`：112 通过、1 跳过（依赖本机宿主渲染器的可选集成检查）、0 失败。
+- [x] 修复后全量 `npm run check`：116 通过、1 跳过（依赖本机宿主渲染器的可选集成检查）、0 失败。
+- [x] 入口加载冒烟已补回：改造 `npm run check` 时丢失了 release.yml 原有的 `import './lib/index.js'` 检查，新增 [entry-import.test.mjs](<../tests/entry-import.test.mjs>) 覆盖入口与三个子入口可加载、四张补丁表装配一致、10 个委托方法存在，并用"删掉 import 应当失败"的负向对照验证过有效性（`8ac61f8`）。
