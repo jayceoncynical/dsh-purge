@@ -32,3 +32,6 @@ default-prompt-inject.md
 /official-harness-payload.7z
 *.asar
 *.asar.bak
+
+# 文档修复时的损坏原文备份
+*.broken-backup

@@ -5937,7 +5937,7 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
             h('span', { className: 'rt-tag' }, POC_SOURCE_LABEL[x.source] || x.source || '—'),
             x.hit_count ? h('span', { className: 'rt-tag' }, '复用 ' + x.hit_count) : null),
           /* 来源行：归类 · 影响版本 · 建立时间 · 来源靶标 · 发现资产 —— 一条知识"什么时候、
-             在哪个单位的哪台资产上发现的"一眼可见 */
+             在哪个单位的哪台资产上发现的"一眼可见 */
           h('div', { className: 'rt-kb-sub' },
             [x.category ? '归类 ' + (POC_CAT_NAME[x.category] || x.category) : null,
               x.versions ? '影响版本 ' + x.versions : null,
