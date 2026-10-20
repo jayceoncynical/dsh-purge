@@ -365,6 +365,11 @@ backupExists=False
 
 审查时使用 Node `v24.21.0`。隔离复现脚本没有作为持久测试提交；修复时需要将相应场景正式纳入测试集。
 
+### 已声明的边界（不是待办，改动前需重新评估）
+
+- `update-files` 事务：提交非整树瞬时可见、需单调用者串行、不保证断电目录元数据持久性；准备阶段中断保留现场待人工处理（详见 [update-files.js](<../lib/update-files.js>) 头部注释）。
+- ZIP 预检收紧后明确拒绝分卷/zip64、加密、UNIX 链接、重解析点、特殊路径扩展元数据、非 UTF-8 且无语言编码标记的名称。GitHub 分发包实测兼容；上游若带这些特征会被拒绝而非降级——有意的保守取舍。
+
 ## 7. 推荐修复批次
 
 | 批次 | 范围 | 完成条件 |
@@ -372,7 +377,7 @@ backupExists=False
 | 第一批：数据正确性 | R04、R06，并增加对应回归测试 | 局部更新不降级；非法状态不入库；重复导入不放大当前统计 |
 | 第二批：文件和更新可靠性 | R01、R02、R03、R05、R08、A01 | 边界检查、失败恢复、资源完整性和并发写入测试通过 |
 | 第三批：发布可重复性 | R07、E01、E02 | 源码与产物一致；发布执行验证；运行时要求准确 |
-| 第四批：结构与性能 | E03、E04 | 渐进拆分不改变行为；性能改进有基准依据 |
+| 第四批：结构与性能 | E03、E04（已完成） | 五块拆分均以行为指纹等价收口；基准见 [benchmark-store-2026-10-20.md](<../docs/benchmark-store-2026-10-20.md>) |
 
 以上为建议顺序，不是已承诺的工期。文件边界问题若涉及当前部署的实际暴露入口，应根据部署情况提前排期。
 
@@ -391,9 +396,9 @@ backupExists=False
 遗留事项：
 
 - [x] E04（本轮）：新增 [bench-store.mjs](<../scripts/bench-store.mjs>)，三档数据量（50/500/2000 资产，最大 79,440 端口快照）锁住十项查询耗时基线；`npm run bench:store` 可复跑。大档下 stats≈72ms、assetChildren≈155ms、列表≈30ms，事件循环为同步阻塞但规模可控；数据库句柄按靶标缓存、close() 统一释放，无泄漏路径。造数含重复导入一轮，顺带覆盖 R06 去重的大数据量路径。
-- [x] E03：大文件拆分（三块完成）。`d8a3a25` 报告生成拆到 [report-gen.js](<../lib/redteam/report-gen.js>)（store-core 5135→4936）；`05b4308` 成果读取查询组拆到 [read-queries.js](<../lib/redteam/read-queries.js>)（净 -49，8 个方法体迁出）；`fce9cec` 补丁定义表拆到 [patch-defs.js](<../lib/patch-defs.js>)（core.js 8400→4786，迁出四张补丁表与配套文本片段）。三块都以"先锁行为基线、再 side-by-side 双跑、指纹全等"收口：第二块 11 项指纹全等，第三块补丁总数 86 与 id 序列、manifest/display_groups/替换样本三项指纹全等。全量测试 112/1/0 与基准同数量级。剩余可拆项：store-core 的写入路径、core.js 的补丁执行与状态机。拆分中发现的历史问题：`reportTargets` 的 `includeAll` 分支统计口径与 `report()` 有差异（两方法原实现即如此，未改动，待独立评估）。
-- [ ] 运行时矩阵：需在真实宿主（桌面端/`dsh web`）确认其内嵌 Node 满足 `node:sqlite` 要求；不满足时演练台不可用的提示是否清晰。
-- [ ] `update-files` 事务的已知限制已写在 [update-files.js](<../lib/update-files.js>) 头部注释：提交非整树瞬时可见、需单调用者串行、不保证断电目录元数据持久性；准备阶段中断保留现场待人工处理。
-- [ ] ZIP 预检收紧后明确拒绝：分卷/zip64、加密、UNIX 链接、重解析点、特殊路径扩展元数据、非 UTF-8 且无语言编码标记的名称。GitHub 分发包实测兼容；若未来上游分发包携带上述特征会被拒绝而非降级——这是有意的保守取舍。
-- [x] 修复后全量 `npm run check`：116 通过、1 跳过（依赖本机宿主渲染器的可选集成检查）、0 失败。
+- [x] E03：大文件拆分（五块完成）。`d8a3a25` 报告生成拆到 [report-gen.js](<../lib/redteam/report-gen.js>)（store-core 5135→4936）；`05b4308` 成果读取查询组拆到 [read-queries.js](<../lib/redteam/read-queries.js>)（8 个方法体迁出）；`fce9cec` 补丁定义表拆到 [patch-defs.js](<../lib/patch-defs.js>)（core.js 8400→4786）；`3fb0c75` 资产与概览查询组拆到 [asset-queries.js](<../lib/redteam/asset-queries.js>)（store-core 5140→4840，9 个方法 346 行）；`2169c88` 闪窗抑制组拆到 [flash-silence.js](<../lib/flash-silence.js>)（core.js 4786→3713，约 1078 行），并把散落的 `_patchTargetAiBase` 收进 [patch-target-state.js](<../lib/patch-target-state.js>)（写入只剩一个入口）。五块都以"先锁行为基线、再 side-by-side 双跑、指纹全等"收口；闪窗组因会写文件，改用"隔离端到端 + 静态符号完整性"双保险，并因此真实抓到 3 次漏导入。全量测试与基准同数量级。剩余可拆项：store-core 的写入路径（私有方法 `#observe`/`#upsertAsset` 等被 7 个以上写方法共用，再拆需先破封装，建议按需再做）。
+- [x] 运行时矩阵：见 [runtime-matrix-2026-10-20.md](<../docs/runtime-matrix-2026-10-20.md>)。只读探测：桌面端（`ELECTRON_RUN_AS_NODE=1`）Node 24.21.0 / Electron 44.7.0，`node:sqlite` 与 FTS5 均可用；`dsh web` 走系统 node 24.21.0，同样可用。`engines >=22.13.0` 与实际相符，低版本失败点收敛在 store-core 的顶层 import 一处（未在低版本真机实测，已写明）。
+- [x] 修复后全量 `npm run check`：123 通过、1 跳过（依赖本机宿主渲染器的可选集成检查）、0 失败。
+- [x] reportTargets 口径已对齐：`b082453` 把按目标 `bySeverity` 补齐 low/info 键位，与 `report()` 结构一致；新增 [report-parity.test.mjs](<../tests/report-parity.test.mjs>) 三项，负向对照回退该行后 5 项失败。
+- [x] 两轮 CI 修复：`30b8bd3` 修正 update-files 故障注入用 realpath 比较（Windows 8.3 短名下注入静默失效，5 项失败）；`0843236` 让入口测试容忍干净 CI 无宿主，并补相对导入完整性检查。验证工作流此后在 Ubuntu/Windows × Node 22.13/24 全绿。
 - [x] 入口加载冒烟已补回：改造 `npm run check` 时丢失了 release.yml 原有的 `import './lib/index.js'` 检查，新增 [entry-import.test.mjs](<../tests/entry-import.test.mjs>) 覆盖入口与三个子入口可加载、四张补丁表装配一致、10 个委托方法存在，并用"删掉 import 应当失败"的负向对照验证过有效性（`8ac61f8`）。
