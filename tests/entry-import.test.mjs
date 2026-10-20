@@ -28,9 +28,51 @@ test('演练台三个子入口可真实加载', async () => {
   assert.equal(ui.name, 'dsh-purge-redteam-ui');
   assert.equal(typeof ui.apply, 'function');
 
-  const tools = await import('../lib/redteam/tools.js');
-  assert.equal(typeof tools, 'object');
-  assert.ok(Object.keys(tools).length > 0);
+  // tools.js 在模块顶层就要从宿主解析 @deepseek-ai/dsh-tools（真实宿主才装），
+  // 干净 CI 上必然拿不到——那是部署前置条件，不是模块图错误。
+  // 但"相对路径 import 写错"这类错误也必须被抓住，所以：
+  //   · 允许且仅允许"解析不到宿主工具"这一种失败；
+  //   · 用下面的静态解析测试兜住相对导入的完整性。
+  let tools = null;
+  let toolsError = null;
+  try {
+    tools = await import('../lib/redteam/tools.js');
+  } catch (error) {
+    toolsError = error;
+  }
+  if (toolsError) {
+    assert.match(
+      String(toolsError.message),
+      /cannot resolve @deepseek-ai\/dsh-tools from host/,
+      `tools.js 加载失败但原因不是缺宿主工具（可能是本地 import 写错）：${toolsError.message}`,
+    );
+  } else {
+    assert.equal(tools.name, 'dsh-purge-redteam-tools');
+    assert.equal(typeof tools.apply, 'function');
+  }
+});
+
+test('演练台模块的相对 import 全部指向存在的文件', async () => {
+  // 不执行被检查的模块，只解析源码里的相对导入并核对文件是否存在。
+  const { readFileSync, existsSync, statSync } = await import('node:fs');
+  const { dirname, resolve } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const root = fileURLToPath(new URL('../lib/redteam/', import.meta.url));
+  const files = ['tools.js', 'ui.js', 'store.js', 'store-core.js', 'index.js', 'client.js',
+    'read-queries.js', 'report-gen.js', 'schema.js', 'validate.js', 'score-rules.js'];
+  const missing = [];
+  for (const file of files) {
+    const full = resolve(root, file);
+    if (!existsSync(full)) { missing.push(`${file} 不存在`); continue; }
+    const source = readFileSync(full, 'utf8');
+    for (const match of source.matchAll(/from\s+['"](\.[^'"]+)['"]/g)) {
+      const target = resolve(dirname(full), match[1]);
+      if (!existsSync(target) || !statSync(target).isFile()) {
+        missing.push(`${file} -> ${match[1]}`);
+      }
+    }
+  }
+  assert.deepEqual(missing, []);
 });
 
 test('补丁定义表结构完整（拆分后仍被 core 正确装配）', async () => {
