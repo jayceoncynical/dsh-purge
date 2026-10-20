@@ -391,7 +391,7 @@ backupExists=False
 遗留事项：
 
 - [x] E04（本轮）：新增 [bench-store.mjs](<../scripts/bench-store.mjs>)，三档数据量（50/500/2000 资产，最大 79,440 端口快照）锁住十项查询耗时基线；`npm run bench:store` 可复跑。大档下 stats≈72ms、assetChildren≈155ms、列表≈30ms，事件循环为同步阻塞但规模可控；数据库句柄按靶标缓存、close() 统一释放，无泄漏路径。造数含重复导入一轮，顺带覆盖 R06 去重的大数据量路径。
-- [ ] E03：大文件拆分（进行中）。第一块已提交（`d8a3a25`）：`report()`/`reportTargets()` 拆到 [report-gen.js](<../lib/redteam/report-gen.js>)，store-core 5135→4936 行；行为等价用同进程双跑证明（新旧代码三指纹全等），全量测试与基准同数量级。候选下一刀：store-core 的 Web 列表/搜索职责、core.js 的补丁定义区（约 3508 行，占全文件 42%）。拆分中新发现的历史问题：`reportTargets` 的 `includeAll` 分支统计口径与 `report()` 有差异（两方法原实现即如此，未改动，待独立评估）。
+- [ ] E03：大文件拆分（进行中）。已完成两块：第一块 `d8a3a25` 把 `report()`/`reportTargets()` 拆到 [report-gen.js](<../lib/redteam/report-gen.js>)，store-core 5135→4936 行；第二块 `05b4308` 把成果读取查询组（`listWeb`/`listChain`/`listCredentials`/`listAccess`/`listWebshells`/`listHttpEvidence`/`listAttackFiles`/`attackFileTree`）拆到 [read-queries.js](<../lib/redteam/read-queries.js>)，store-core 4936→5140 行（净 -49，8 个方法体迁出）。两块都用同进程双跑证明行为等价（第二块 11 项指纹全等），全量测试 112/1/0 与基准同数量级。候选下一刀：core.js 的补丁定义区（约 3508 行，占全文件 42%）。拆分中新发现的历史问题：`reportTargets` 的 `includeAll` 分支统计口径与 `report()` 有差异（两方法原实现即如此，未改动，待独立评估）。
 - [ ] 运行时矩阵：需在真实宿主（桌面端/`dsh web`）确认其内嵌 Node 满足 `node:sqlite` 要求；不满足时演练台不可用的提示是否清晰。
 - [ ] `update-files` 事务的已知限制已写在 [update-files.js](<../lib/update-files.js>) 头部注释：提交非整树瞬时可见、需单调用者串行、不保证断电目录元数据持久性；准备阶段中断保留现场待人工处理。
 - [ ] ZIP 预检收紧后明确拒绝：分卷/zip64、加密、UNIX 链接、重解析点、特殊路径扩展元数据、非 UTF-8 且无语言编码标记的名称。GitHub 分发包实测兼容；若未来上游分发包携带上述特征会被拒绝而非降级——这是有意的保守取舍。
