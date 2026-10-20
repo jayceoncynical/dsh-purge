@@ -1,3 +1,31 @@
+# 1.1.75
+
+## 中文
+
+- 版本 **1.1.75**：按审查文档落实的一轮可靠性修复与结构整理。重点不是加功能，而是让「更新不会坏、数据不会悄悄变、发布结果可重复」。
+- **更新链路事务化**：ZIP 覆盖更新改为「完整暂存 → 校验 → 逐资源同卷切换」，多目标失败整体回滚；回滚中断可凭日志重试，回滚失败保留唯一旧备份。资源清单补齐 `presets`/`skills`/`scripts`（此前这三个目录不会被更新覆盖，会出现代码新、预设旧）。
+- **路径边界统一**：新增 `lib/path-boundary.js`，ASAR 解包、ZIP 解包、技能兜底读取三处共用一套预检；父级路径、绝对路径、盘符、Windows 设备名等在**任何写入之前**整批拒绝。真实 `git archive` 分发包实测兼容。
+- **数据正确性**：补充漏洞证据不再把已有 high/critical 静默降为 info（此前会让成果从报告里消失）；非法状态枚举不再入库；重复导入同一服务快照不再放大端口计数，服务变化仍保留历史。
+- **原子写并发**：临时文件名改为随机唯一并以独占方式创建，同目标写入串行化，消除同毫秒并发互相踩踏。
+- **换包脚本**：`Move-Item` 使用终止错误语义，并在宣布成功前校验源与备份，避免文件被占用时误报成功、清掉待处理标记。
+- **前端**：请求层补齐 HTTP 错误与非 JSON 响应处理（原先直接把解析异常抛给界面），倒计时定时器与下载 URL 释放改为可清理。
+- **工程**：新增 `lib/redteam/report-gen.js`、`read-queries.js`、`asset-queries.js`、`patch-defs.js`、`flash-silence.js` 五个模块，`core.js` 从 8400 行降到 3713 行；每块拆分都以行为指纹等价收口。新增数据量基准脚本、入口加载冒烟测试与双平台 CI 矩阵。
+- **测试**：全量 `npm run check` 123 项通过、1 项跳过（依赖本机宿主渲染器）。
+- 运行时探测：桌面端与 `dsh web` 均为 Node 24.21.0，`node:sqlite` 与 FTS5 可用；`engines` 下限提到 `>=22.13.0`。
+
+## English
+
+- **1.1.75** is a reliability and structure pass driven by the audit document. The goal was not new features but "updates don't break, data doesn't drift silently, releases are reproducible".
+- **Transactional updates**: the ZIP overlay now stages everything, verifies, then swaps each managed resource on the same volume, rolling back all targets on failure. Interrupted rollbacks resume from a journal; a failed rollback keeps the only remaining backup. The managed list now includes `presets`/`skills`/`scripts` (previously these were never updated, leaving new code with old presets).
+- **Unified path boundaries**: new `lib/path-boundary.js` shared by ASAR extraction, ZIP extraction and the skill-reading fallback. Parent segments, absolute paths, drive letters and Windows device names are rejected for the whole archive **before any write**. Verified against a real `git archive` package.
+- **Data correctness**: adding evidence to an existing finding no longer silently downgrades high/critical to info (which made results drop out of the report); invalid status enums are rejected; re-importing an identical service snapshot no longer inflates port counts while real changes still keep history.
+- **Concurrent atomic writes**: temporary names are random and created exclusively, writes to the same target are serialized — no more same-millisecond collisions.
+- **Swap script**: `Move-Item` uses terminating errors and verifies source/backup before declaring success, so a locked file can no longer be reported as swapped.
+- **Frontend**: the request layer now handles HTTP errors and non-JSON bodies (it used to throw parse errors into the UI); countdown timers and download URLs are properly cleaned up.
+- **Engineering**: five new modules (`report-gen.js`, `read-queries.js`, `asset-queries.js`, `patch-defs.js`, `flash-silence.js`); `core.js` shrank from 8400 to 3713 lines. Every split was closed out with behavior-fingerprint equivalence. Added a data-scale benchmark, an entry-import smoke test, and a two-platform CI matrix.
+- **Tests**: full `npm run check` — 123 passing, 1 skipped (needs a local host renderer).
+- Runtime probe: both the desktop app and `dsh web` run Node 24.21.0 with `node:sqlite` and FTS5 available; `engines` floor raised to `>=22.13.0`.
+
 # 1.1.74
 
 ## 中文

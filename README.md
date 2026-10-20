@@ -4,7 +4,7 @@
 
 <h1 align="center">⚔️ DeepSeek Harness cybersecurity red-team tool (dsh-purge)</h1>
 
-<p align="center"><strong>Version 1.1.74</strong></p>
+<p align="center"><strong>Version 1.1.75</strong></p>
 
 <p align="center">
   <em>DeepSeek Harness jailbreak: every model, swap prompts per model. Default prompt targets the domestic model 小码酱.</em>
@@ -100,7 +100,7 @@ The latest plugin supports **dsh 0.2** only — do not apply it to 0.1.x.
 
 | Host | Version to use |
 | --- | --- |
-| dsh **0.2.0-rc.2 / 0.2.1-rc.2** (official desktop / official `dsh web`) | **1.1.74** or newer; this page installs that line |
+| dsh **0.2.0-rc.2 / 0.2.1-rc.2** (official desktop / official `dsh web`) | **1.1.75** or newer; this page installs that line |
 | dsh **0.1.7** (incl. rc.1 / rc.2) | **1.1.39** or older; see [upstream Releases](https://github.com/YuJunZhiXue/dsh-purge/releases) |
 
 Unmatched patches stay pending or skipped; nothing is rewritten blindly.
@@ -114,13 +114,13 @@ Web and the official desktop EXE are the two maintained hosts. **Install both. A
 **Web (official `dsh web`)**
 
 ```sh
-dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.74.tar.gz
+dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.75.tar.gz
 ```
 
 **Desktop (official EXE)**
 
 ```sh
-dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.74.tar.gz
+dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.75.tar.gz
 ```
 
 If this directory is already a clone, use `add .` instead of the URL. If `dsh` is not on PATH, use [Manual install](#manual).
@@ -130,7 +130,7 @@ There is no npm package — use the release URL above.
 For the desktop client you can also click the button (`dsh://` deep link):
 
 <p align="center">
-  <a href="dsh://plugin/install?id=dsh-purge&name=dsh-purge&version=1.1.74&repo=jayceoncynical%2Fdsh-purge&permissions=%E7%B3%BB%E7%BB%9F%E6%8F%90%E7%A4%BA%E8%AF%8D%E6%B3%A8%E5%85%A5%2C%E6%9C%AC%E6%9C%BA%E8%A1%A5%E4%B8%81%2C%E8%AE%BE%E7%BD%AE%E9%A1%B5&downloadUrl=https%3A%2F%2Fgithub.com%2Fjayceoncynical%2Fdsh-purge%2Freleases%2Flatest%2Fdownload%2Fdsh-purge-1.1.74.zip"><strong>Install in desktop client</strong></a>
+  <a href="dsh://plugin/install?id=dsh-purge&name=dsh-purge&version=1.1.75&repo=jayceoncynical%2Fdsh-purge&permissions=%E7%B3%BB%E7%BB%9F%E6%8F%90%E7%A4%BA%E8%AF%8D%E6%B3%A8%E5%85%A5%2C%E6%9C%AC%E6%9C%BA%E8%A1%A5%E4%B8%81%2C%E8%AE%BE%E7%BD%AE%E9%A1%B5&downloadUrl=https%3A%2F%2Fgithub.com%2Fjayceoncynical%2Fdsh-purge%2Freleases%2Flatest%2Fdownload%2Fdsh-purge-1.1.75.zip"><strong>Install in desktop client</strong></a>
 </p>
 
 ### After the command: three steps
@@ -165,13 +165,13 @@ If `dsh` is not on PATH, tell the user and stop. If this directory is already a 
 **Web (official `dsh web`)**
 
 ```sh
-dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.74.tar.gz
+dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.75.tar.gz
 ```
 
 **Desktop (official EXE)**
 
 ```sh
-dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.74.tar.gz
+dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.75.tar.gz
 ```
 
 After the commands finish, tell the user to fully quit and restart `dsh web`, and to quit the desktop tray then reopen the EXE. On each host, open **dsh-purge** beside the session title and **Apply** on **Clean**. Then stop.
@@ -212,7 +212,7 @@ $cands | Select-Object -Unique | Where-Object { $_ -and (Test-Path (Join-Path $_
 git clone https://github.com/jayceoncynical/dsh-purge.git "$DSH_HOME/plugins/dsh-purge"
 ```
 
-Without git: download [dsh-purge-1.1.74.tar.gz](https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.74.tar.gz), extract it, rename `dsh-purge-1.1.74` to `dsh-purge`, and place the whole folder under `plugins`. If you already have a copy, copy the entire tree — not a few `.js` files.
+Without git: download [dsh-purge-1.1.75.tar.gz](https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.75.tar.gz), extract it, rename `dsh-purge-1.1.75` to `dsh-purge`, and place the whole folder under `plugins`. If you already have a copy, copy the entire tree — not a few `.js` files.
 
 **3. Edit only that profile's `package.json` — back it up first.** Web → `$DSH_HOME/profiles/web/package.json`; desktop → `$DSH_HOME/profiles/desktop/package.json`. Add **only two things**, keeping every existing dependency and bundle:
 
