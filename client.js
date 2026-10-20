@@ -4050,6 +4050,7 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
           error: (data && (data.error || data.message)) || (res.status + ' ' + res.statusText),
         })
       }
+      if (data === null) return { ok: false, error: '服务器返回空响应' }
       return data
     })
 
@@ -5571,7 +5572,7 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
           a.href = url
           a.download = 'report-' + String(label || 'score').replace(/[^\w.\-]/g, '_') + '.md'
           a.click()
-          /* 立刻 revoke 会在部分浏览器里让 click 启动的下载断流,延后一拍 */
+          // 下载启动后再释放，避免部分浏览器的下载被提前中断。
           setTimeout(() => { try { URL.revokeObjectURL(url) } catch { /* ignore */ } }, 1000)
           setMsg({ ok: '已下载：' + label })
         } catch (e) { setMsg({ err: '下载失败：' + ((e && e.message) || e) }) }
@@ -7169,7 +7170,7 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
       const [countdown, setCountdown] = React.useState(0)
       const countdownRef = React.useRef(null)
       const clearCountdown = React.useCallback(() => {
-        if (countdownRef.current) { try { clearInterval(countdownRef.current) } catch { /* ignore */ } }
+        if (countdownRef.current !== null) clearInterval(countdownRef.current)
         countdownRef.current = null
       }, [])
       React.useEffect(() => () => clearCountdown(), [clearCountdown])

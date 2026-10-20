@@ -1,0 +1,32 @@
+name: 验证
+
+on:
+  push:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: ${{ matrix.os }} / Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [22.13.0, 24.x]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: 检查源码与前端产物
+        run: npm run check:syntax && npm run check:client
+      - name: 运行回归测试
+        run: npm test
+      - name: 验证无 FTS5 数据库兼容
+        env:
+          REDTEAM_NO_FTS5: '1'
+        run: node --test tests/store-integrity.test.mjs

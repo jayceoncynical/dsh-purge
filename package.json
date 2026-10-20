@@ -35,7 +35,11 @@
   ],
   "scripts": {
     "embed-prompt": "node scripts/embed-default-prompt.mjs",
-    "build:client": "node scripts/build-client.mjs"
+    "build:client": "node scripts/build-client.mjs",
+    "check:client": "node scripts/build-client.mjs --check",
+    "check:syntax": "node scripts/check-source.mjs",
+    "test": "node --test",
+    "check": "npm run check:syntax && npm run check:client && npm test"
   },
   "license": "MIT",
   "keywords": [
@@ -87,7 +91,7 @@
     "@deepseek-ai/cordis": "^4.0.1"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22.13.0"
   },
   "dshTarget": "0.2.0-rc.2 || 0.2.1-rc.2"
 }

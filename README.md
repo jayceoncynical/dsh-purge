@@ -15,7 +15,7 @@
   <a href="https://github.com/jayceoncynical/dsh-purge/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-65a30d?style=flat" alt="MIT license"></a>
   <a href="https://www.deepseek.com/harness/"><img src="https://img.shields.io/badge/dsh-0.2.0--rc.2%20%2F%200.2.1--rc.2-blue" alt="DSH"></a>
   <br>
-  <img src="https://img.shields.io/badge/Node.js-%3E%3D18-339933?logo=node.js&logoColor=fff" alt="Node.js">
+  <img src="https://img.shields.io/badge/Node.js-%3E%3D22.13.0-339933?logo=node.js&logoColor=fff" alt="Node.js">
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=000" alt="JavaScript">
 </p>
 
@@ -27,7 +27,7 @@
 >
 > Adding the plugin to a profile does not patch the host. Click **dsh-purge** beside the session title → **Clean** → **Apply**. A successful Apply restarts; an unfinished Apply does not. After the restart, start a new chat — that is when the inject enters the session.
 >
-> Node.js **≥18**. Windows no-flash needs **Node ≥22**. The installer ships as a release asset from this repository; there is no npm package.
+> Node.js **≥22.13.0**（内置事实库依赖 `node:sqlite`；更早版本不在支持范围）。安装包从本仓库 Release 分发；npm 上没有这个包。
 
 ## Contents
 

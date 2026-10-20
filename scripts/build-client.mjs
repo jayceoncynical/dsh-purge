@@ -70,5 +70,15 @@ const beginAt = client.indexOf(BEGIN);
 const endAt = client.indexOf(END);
 if (beginAt < 0 || endAt < 0 || endAt < beginAt) throw new Error("drill markers out of order");
 client = client.slice(0, beginAt) + fragment + client.slice(endAt + END.length);
-writeFileSync(clientPath, client);
-console.log("embedded drill client into client.js (" + Buffer.byteLength(fragment) + " bytes fragment)");
+if (process.argv.includes("--check")) {
+	const current = readFileSync(clientPath, "utf8").replace(/\r\n/g, "\n");
+	if (current !== client.replace(/\r\n/g, "\n")) {
+		console.error("前端产物与源码不一致，请运行 npm run build:client");
+		process.exitCode = 1;
+	} else {
+		console.log("前端产物与源码一致");
+	}
+} else {
+	writeFileSync(clientPath, client);
+	console.log("已生成前端片段（" + Buffer.byteLength(fragment) + " 字节）");
+}

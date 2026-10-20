@@ -13,7 +13,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
   release:
+    needs: validate
     if: github.repository == 'jayceoncynical/dsh-purge'
     runs-on: ubuntu-latest
     env:
@@ -24,12 +30,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Syntax-check plugin entry
-        run: |
-          node --check lib/index.js
-          node --check lib/core.js
-          node --check lib/reapply.js
-          node --input-type=module -e "import './lib/index.js'"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+
+      - name: 验证发布源码和产物
+        run: npm run check:syntax && npm run check:client
 
       - name: Build release archive
         id: build
@@ -42,10 +48,13 @@ jobs:
             echo "release-notes.md 第一行必须是 # ${version}，现在是: ${first}"
             exit 1
           fi
+          commit="$GITHUB_SHA"
           if git rev-parse -q --verify "refs/tags/${tag}^{}" >/dev/null; then
-            commit="$(git rev-parse "refs/tags/${tag}^{}")"
-          else
-            commit="$GITHUB_SHA"
+            tagged_commit="$(git rev-parse "refs/tags/${tag}^{}")"
+            if [ "$tagged_commit" != "$GITHUB_SHA" ]; then
+              echo "版本标签已指向其他提交；请更新版本号，禁止发布未经本轮验证的旧源码。"
+              exit 1
+            fi
           fi
           # DSH 的 install-spec 只认 .tgz / .tar.gz，zip 只给 dsh:// 深链用，两份都出
           tgz="dsh-purge-${version}.tar.gz"

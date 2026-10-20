@@ -15,7 +15,7 @@
   <a href="https://github.com/jayceoncynical/dsh-purge/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-65a30d?style=flat" alt="MIT license"></a>
   <a href="https://www.deepseek.com/harness/"><img src="https://img.shields.io/badge/dsh-0.2.0--rc.2%20%2F%200.2.1--rc.2-blue" alt="DSH"></a>
   <br>
-  <img src="https://img.shields.io/badge/Node.js-%3E%3D18-339933?logo=node.js&logoColor=fff" alt="Node.js">
+  <img src="https://img.shields.io/badge/Node.js-%3E%3D22.13.0-339933?logo=node.js&logoColor=fff" alt="Node.js">
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=000" alt="JavaScript">
 </p>
 
@@ -27,7 +27,7 @@
 >
 > 写进 profile 还不会改宿主。点会话标题旁的 **dsh-purge** → **清洗** → **应用**。成功会自动重启；补丁没打完不重启。重启后新开一轮对话，注入才进当前会话。
 >
-> Node.js **≥18**。Windows 无闪窗需要 **Node ≥22**。安装包从本仓库 Release 分发；npm 上没有这个包。
+> Node.js **≥22.13.0**（内置事实库依赖 `node:sqlite`；更早版本不在支持范围）。安装包从本仓库 Release 分发；npm 上没有这个包。
 
 ## 目录
 
@@ -407,12 +407,10 @@ DSH 会按顺序执行同一批中的 Bash 调用。旧版 dsh-purge 把默认�
 ## 本地校验
 
 ```sh
-node --check lib/index.js
-node --check lib/core.js
-node --check lib/rewind.js
-node --check lib/skills.js
-node --check client.js
+npm run check
 ```
+
+包含全部 JavaScript 语法检查、前端源码与产物一致性检查及隔离回归测试。修改演练台前端源码后先运行 `npm run build:client`。持续集成覆盖 Windows / Linux 与 Node 22.13.0 / 24；本机未安装的版本由持续集成验证。
 
 ---
 
