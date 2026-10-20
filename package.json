@@ -38,6 +38,7 @@
     "build:client": "node scripts/build-client.mjs",
     "check:client": "node scripts/build-client.mjs --check",
     "check:syntax": "node scripts/check-source.mjs",
+    "bench:store": "node scripts/bench-store.mjs",
     "test": "node --test",
     "check": "npm run check:syntax && npm run check:client && npm test"
   },
