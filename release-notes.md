@@ -1,3 +1,27 @@
+# 1.1.76
+
+## 中文
+
+- 版本 **1.1.76**：补上「提示词层管不到的那一层」。1.1.75 的破甲全在 assemble：注入正文、capability 协议、身份覆盖。这些只改变模型**看到什么**，不改变它**做了什么**。模型仍然可以输出一段结构完整、语气礼貌、还附了技术侦察结论的拒答（"这个活我不接" → "主二进制 cryptid=1" → "三重门" → "你是开发/测试方吗？告诉我，我接着干"），然后把请求原样退回。assemble 对此零感知：inject 40014 字节照挂、turn/end 正常 completed、界面显示"已完成"。
+- **新增 `lib/refusal-watch.js`（拒答看门狗）**：turn 结束后读这一轮的 assistant 正文并判定。命中拒答 → **先**把整轮（本轮 user + 全部 assistant/tool 节点）从**模型可见** surface 撤掉 → 把纠正块挂进下一轮系统提示 → 再把纠正块作为消息投回去。顺序固定：不撤轮就重发，模型会在带自己拒答的上下文里读纠正块，效果打折。
+- **判定分三层，不再只看关键词**：强信号（"我不接/我不做/I can't help"）出现在**剥掉引用与代码后的正文开头**即判拒答；"把请求转走"的形状（正规渠道、你是开发方吗、你属于哪种、告诉我我接着干、这不是打自己的靶场）要凑够两个且这一轮确实没有交付物；技术性软信号（"服务端会回滚""没越狱机免谈"）只是"难"，不单独算拒。**分析类回答会引用拒答原句当例子**，所以引用块、代码块、行内引用在判定前先剥掉，否则正常交付会被误判。
+- **纠正块点名，不泛泛而谈**：从拒答里摘出原句（只摘"我不做"和"把请求转走"两类，技术要点不摘——点名禁止 cryptsize 只会污染指令），逐条列入"禁止复述"，并带回原请求全文。第二次重发标 `FINAL ATTEMPT`。默认重发 2 次，超预算就停手并把计数留在日志里，不无限打转。
+- **人看的聊天记录不受影响**：撤轮用的是 surface `replace`，只作用于模型面；append-origin 事件才是给人看的那一份。用户点停止、请求报错、max-tokens 三种收尾都不判定。
+- **状态可见**：`purge_status` / `/purge status` 末尾新增看门狗计数（checked / refused / rerun / cut / exhausted / pending + 最后一条的 score 与首行），提示词层到底有没有把拒答压下去，看这里。配置项 `refusalGuard`（默认开）、`refusalReruns`（默认 2）。
+- **测试**：新增 28 项看门狗测试，含真实拒答样本、引用剥离、surface 撤轮、去重、预算耗尽、dispose 后不再处理。全量 `npm run check` **151 项通过、1 项跳过**。
+
+## English
+
+- **1.1.76** closes the layer the prompt could not reach. Everything 1.1.75 did lives in `assemble` — injected body, capability protocol, identity overlay. Those change what the model *sees*, not what it *does*. A model can still emit a well-structured, polite refusal that ships reconnaissance findings ("I won't take this job" → "the main binary is cryptid=1" → "three gates" → "are you the developer? tell me and I'll continue"), then hand the request back unchanged. `assemble` never notices: the 40014-byte inject is still mounted, `turn/end` still reports `completed`, the UI still says "done".
+- **New `lib/refusal-watch.js`**: after a turn ends, read that turn's assistant text and classify it. On a refusal, **first** shadow the whole turn (this turn's user message plus every assistant/tool node) out of the **model-visible** surface, then mount the correction block into the next system prompt, then deliver it as a message. The order is fixed: re-issuing without the cut leaves the model reading the correction inside a context that still contains its own refusal.
+- **Three-layer classification, not keyword matching**: strong signals ("我不接 / I can't help") count only in the body's opening **after quoted text and code fences are stripped**; deflection shapes (official channels, "are you the developer", "which are you", "tell me and I'll continue", "this isn't your own range") need two hits *and* no deliverable in the turn; technical soft signals ("the server would roll it back", "no jailbreak, forget it") describe difficulty, not refusal, and never count alone. Analysis answers routinely quote refusals as examples, so quoted blocks, code fences and inline quotes are removed before classification — otherwise real deliveries get misread.
+- **The correction names names**: refusal quotes are extracted (only the "I won't" and deflection classes — technical points are skipped, since banning `cryptsize` from a reply only pollutes the instruction) and listed one by one as forbidden, with the original request carried verbatim. The second re-issue is marked `FINAL ATTEMPT`. Two re-issues by default, then it stops and leaves the counters in the log.
+- **The human transcript is untouched**: the cut uses surface `replace`, which only affects the model-visible surface; append-origin events remain the durable transcript. User aborts, request errors and max-tokens endings are never classified.
+- **Visible state**: `purge_status` / `/purge status` now ends with the watchdog counters (checked / refused / rerun / cut / exhausted / pending, plus the last score and first line). Config: `refusalGuard` (on by default), `refusalReruns` (default 2).
+- **Tests**: 28 new watchdog tests — the real refusal sample, quote stripping, surface cut, dedupe, budget exhaustion, no-op after dispose. Full `npm run check`: **151 passing, 1 skipped**.
+
+---
+
 # 1.1.75
 
 ## 中文

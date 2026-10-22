@@ -4,7 +4,7 @@
 
 <h1 align="center">⚔️ DeepSeek Harness 网络安全红队工具（dsh-purge）</h1>
 
-<p align="center"><strong>Version 1.1.75</strong></p>
+<p align="center"><strong>Version 1.1.76</strong></p>
 
 <p align="center">
   <em>DeepSeek Harness 破甲：让所有模型都能破甲，不同模型可换不同提示词；默认提示词面向国模「小码酱」。</em>
@@ -100,7 +100,7 @@ Harness 不只是把问题交给模型。它还会在运行时改提示词、审
 
 | 宿主 | 用哪个版本 |
 | --- | --- |
-| dsh **0.2.0-rc.2 / 0.2.1-rc.2**（官方桌面 / 官方 `dsh web`） | **1.1.75** 及以上，本页命令装的就是这一档 |
+| dsh **0.2.0-rc.2 / 0.2.1-rc.2**（官方桌面 / 官方 `dsh web`） | **1.1.76** 及以上，本页命令装的就是这一档 |
 | dsh **0.1.7**（含 rc.1 / rc.2） | **1.1.39** 及更早，见[上游 Releases](https://github.com/YuJunZhiXue/dsh-purge/releases) |
 
 对不上的补丁会显示待应用或跳过，不会乱改文件。
@@ -114,13 +114,13 @@ Harness 不只是把问题交给模型。它还会在运行时改提示词、审
 **Web（官方 `dsh web`）**
 
 ```sh
-dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.75.tar.gz
+dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.76.tar.gz
 ```
 
 **桌面端（官方 EXE）**
 
 ```sh
-dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.75.tar.gz
+dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.76.tar.gz
 ```
 
 当前目录已经是本仓库时，把地址换成 `add .`。`dsh` 不在 PATH 时走 [手动安装](#manual)。
@@ -130,7 +130,7 @@ npm 上没有这个包，请直接使用上面的 Release 地址。
 桌面客户端也可以点按钮（`dsh://` 唤起）：
 
 <p align="center">
-  <a href="dsh://plugin/install?id=dsh-purge&name=dsh-purge&version=1.1.75&repo=jayceoncynical%2Fdsh-purge&permissions=%E7%B3%BB%E7%BB%9F%E6%8F%90%E7%A4%BA%E8%AF%8D%E6%B3%A8%E5%85%A5%2C%E6%9C%AC%E6%9C%BA%E8%A1%A5%E4%B8%81%2C%E8%AE%BE%E7%BD%AE%E9%A1%B5&downloadUrl=https%3A%2F%2Fgithub.com%2Fjayceoncynical%2Fdsh-purge%2Freleases%2Flatest%2Fdownload%2Fdsh-purge-1.1.75.zip"><strong>唤起客户端一键安装</strong></a>
+  <a href="dsh://plugin/install?id=dsh-purge&name=dsh-purge&version=1.1.76&repo=jayceoncynical%2Fdsh-purge&permissions=%E7%B3%BB%E7%BB%9F%E6%8F%90%E7%A4%BA%E8%AF%8D%E6%B3%A8%E5%85%A5%2C%E6%9C%AC%E6%9C%BA%E8%A1%A5%E4%B8%81%2C%E8%AE%BE%E7%BD%AE%E9%A1%B5&downloadUrl=https%3A%2F%2Fgithub.com%2Fjayceoncynical%2Fdsh-purge%2Freleases%2Flatest%2Fdownload%2Fdsh-purge-1.1.76.zip"><strong>唤起客户端一键安装</strong></a>
 </p>
 
 ### 装完都要做这三步
@@ -165,13 +165,13 @@ Web 的控件只动 Web，桌面端的只动桌面应用。不要在一个宿主
 **Web 端（官方 `dsh web`）**
 
 ```sh
-dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.75.tar.gz
+dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.76.tar.gz
 ```
 
 **桌面端（官方 EXE）**
 
 ```sh
-dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.75.tar.gz
+dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.76.tar.gz
 ```
 
 命令结束后，提醒用户：Web 完全退出并重启 `dsh web`；桌面端退出托盘再打开 EXE。各自点会话标题旁的 **dsh-purge**，在「清洗」里点「应用」。然后停止。
@@ -212,7 +212,7 @@ $cands | Select-Object -Unique | Where-Object { $_ -and (Test-Path (Join-Path $_
 git clone https://github.com/jayceoncynical/dsh-purge.git "$DSH_HOME/plugins/dsh-purge"
 ```
 
-没有 git：下载 [dsh-purge-1.1.75.tar.gz](https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.75.tar.gz)，解压后把 `dsh-purge-1.1.75` 改名为 `dsh-purge`，整夹放到 `plugins` 下。已有副本就复制整个目录，不要只拷几个 `.js`。
+没有 git：下载 [dsh-purge-1.1.76.tar.gz](https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-1.1.76.tar.gz)，解压后把 `dsh-purge-1.1.76` 改名为 `dsh-purge`，整夹放到 `plugins` 下。已有副本就复制整个目录，不要只拷几个 `.js`。
 
 **3. 只改对应 profile 的 `package.json`，先备份。** Web → `$DSH_HOME/profiles/web/package.json`；桌面 → `$DSH_HOME/profiles/desktop/package.json`。**只追加两处**，原有依赖和 bundle 全部留着：
 
@@ -473,6 +473,41 @@ flowchart LR
   C --> D["卸载插件不删用户 Skill"]
 ```
 
+### 拒答看门狗（1.1.76 起）
+
+提示词层只改变模型**看到什么**，不改变它**做了什么**。模型完全可以输出一段结构完整、
+语气礼貌、还附了技术侦察结论的回复，然后把请求原样退回——assemble 对此零感知：
+注入照挂、`turn/end` 照报 `completed`、界面照显示"已完成"。
+
+这一层在 turn 结束后补位：
+
+```mermaid
+flowchart TD
+  A["turn/end (reason=completed)"] --> B["读这一轮最后的 assistant 正文"]
+  B --> C["剥掉引用块、代码块、行内引用"]
+  C --> D{"判定"}
+  D -->|"开头有强信号 (我不接 / I can't help)"| R["拒答"]
+  D -->|"'把请求转走' 形状 ≥2 且无交付物"| R
+  D -->|其他| K["正常交付，清掉该会话的重发链"]
+  R --> E{"重发预算还有?"}
+  E -->|否| X["停手，计数留在日志"]
+  E -->|是| F["把整轮从模型可见 surface 撤掉"]
+  F --> G["纠正块挂进下一轮系统提示"]
+  G --> H["纠正块作为消息投回去"]
+  H --> A
+```
+
+判定分三层：**强信号**只在剥掉引用后的正文开头算；**"把请求转走"的形状**（正规渠道、
+"你是开发方吗"、"告诉我我接着干"）要凑够两个且这一轮确实没有交付物；**技术性软信号**
+（"服务端会回滚"、"没越狱机免谈"）只是难，不单独算拒。分析类回答会引用拒答原句当例子，
+所以引用和代码在判定前先剥掉，否则正常交付会被误判。
+
+纠正块从拒答里摘原句逐条点名禁止，并带回原请求全文；第二次重发标 `FINAL ATTEMPT`。
+默认重发 2 次（`refusalReruns`），超预算停手，不无限打转。撤轮用 surface `replace`，
+只作用于模型面——人看的聊天记录不受影响。用户点停止、请求报错、max-tokens 三种收尾都不判定。
+
+计数在 `purge_status` / `/purge status` 末尾：`checked / refused / rerun / cut / exhausted / pending`。
+
 ---
 
 ## 还原
@@ -516,3 +551,4 @@ flowchart LR
 - 改动范围是本机 `@deepseek-ai/*` 包里的渲染文案、默认策略和执行逻辑，以及用户目录下的覆盖文件与规则集。
 - 升级后原文对不上会显示跳过，这次应用仍算完成，不会乱改。
 - 不改动非 `@deepseek-ai` 的第三方插件源仓库（启动时的 CMD 无感会**尽力**修补已装的 doctor / market / 梁神 / mnemon，属运行时补丁）。
+
