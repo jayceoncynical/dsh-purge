@@ -73,7 +73,7 @@ Harness 不只是把问题交给模型。它还会在运行时改提示词、审
 
 ### 署名要求
 
-**借用本项目的名称、思路、代码或提示词，必须署名，并写明来源仓库：** [jayceoncynical/dsh-purge](https://github.com/jayceoncynical/dsh-purge)。不署名、隐瞒来源、改头换面据为己有，作者将依法追究责任。
+**借用本项目的名称、思路、代码或提示词，必须署名，并写明来源仓库：** [YuJunZhiXue/dsh-purge](https://github.com/YuJunZhiXue/dsh-purge)。不署名、隐瞒来源、改头换面据为己有，作者将依法追究责任。
 
 本项目基于 [YuJunZhiXue/dsh-purge](https://github.com/YuJunZhiXue/dsh-purge) 在 MIT 许可时期公开的代码发展，保留包内原始版权声明与 MIT 许可。
 
