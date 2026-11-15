@@ -26,9 +26,6 @@ jobs:
     needs: validate
     if: github.repository == 'jayceoncynical/dsh-purge'
     runs-on: ubuntu-latest
-    env:
-      # 公开分发仓库；私有主仓库与它共用同一份产物
-      DIST_REPO: jayceoncynical/dsh-purge-dist
     steps:
       - uses: actions/checkout@v4
         with:
@@ -104,54 +101,3 @@ jobs:
           gh release upload "$tag" "$tgz" "$zip" --clobber
           echo "published https://github.com/${GITHUB_REPOSITORY}/releases/tag/${tag}"
 
-      - name: Publish to public distribution repository
-        env:
-          GH_TOKEN: ${{ secrets.DIST_RELEASE_TOKEN }}
-        run: |
-          set -euo pipefail
-          tag="${{ steps.build.outputs.tag }}"
-          version="${{ steps.build.outputs.version }}"
-          tgz="${{ steps.build.outputs.tgz }}"
-          zip="${{ steps.build.outputs.zip }}"
-          tgz_sha="${{ steps.build.outputs.tgz_sha }}"
-          zip_sha="${{ steps.build.outputs.zip_sha }}"
-          notes="$(mktemp)"
-          # dist 仓库没有源码，说明里只放本版段落 + 安装地址 + 校验值。
-          # 安装一律用 .tar.gz：DSH 的 install-spec 只认 .tgz / .tar.gz，zip 仅供 dsh:// 深链。
-          {
-            awk -v ver="# ${version}" '
-              $0 == ver { inside = 1 }
-              inside && /^# / && $0 != ver { exit }
-              inside { print }
-            ' release-notes.md
-            echo ""
-            echo "---"
-            echo ""
-            echo "## 安装 / Install"
-            echo ""
-            echo '```bash'
-            echo "dsh plugin --profile web     add https://github.com/${DIST_REPO}/releases/download/${tag}/${tgz}"
-            echo "dsh plugin --profile desktop add https://github.com/${DIST_REPO}/releases/download/${tag}/${tgz}"
-            echo '```'
-            echo ""
-            echo "## 校验 / Verify"
-            echo ""
-            echo '```'
-            echo "${tgz}: ${tgz_sha}"
-            echo "${zip}: ${zip_sha}"
-            echo '```'
-          } > "$notes"
-          echo "dist notes bytes: $(wc -c < "$notes")"
-          if gh release view "$tag" --repo "$DIST_REPO" >/dev/null 2>&1; then
-            echo "release exists in dist repo: $tag — refreshing notes and assets"
-            gh release edit "$tag" --repo "$DIST_REPO" --notes-file "$notes"
-            gh release upload "$tag" "$tgz" "$zip" --repo "$DIST_REPO" --clobber
-          else
-            args=(release create "$tag" --repo "$DIST_REPO" --title "$tag" --notes-file "$notes" --target main)
-            case "$version" in
-              *beta*|*alpha*|*rc*) args+=(--prerelease) ;;
-            esac
-            gh "${args[@]}"
-            gh release upload "$tag" "$tgz" "$zip" --repo "$DIST_REPO" --clobber
-          fi
-          echo "published https://github.com/${DIST_REPO}/releases/tag/${tag}"
