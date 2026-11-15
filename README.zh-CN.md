@@ -23,7 +23,7 @@
   <a href="README.md">English</a> | <a href="README.zh-CN.md">中文</a>
 </p>
 
-> **官方 Web 和官方桌面端都支持。** 官方 `dsh web` 用 profile `web`；官方桌面 EXE（DeepSeek Harness **0.2.0-rc.2 / 0.2.1-rc.2**）用 profile `desktop`。两边分开安装、分开点「应用」。当前版本只适配 dsh 0.2；更早的 dsh 用对应的老版本插件。社区桌面端不维护。
+> **官方 Web 和官方桌面端都支持。** 官方 `dsh web` 用 profile `web`；官方桌面 EXE（DeepSeek Harness **0.2.0-rc.2 / 0.2.1-rc.2 / 0.2.1-rc.5 / 0.2.2-rc.3**）用 profile `desktop`。两边分开安装、分开点「应用」。当前版本只适配 dsh 0.2；更早的 dsh 用对应的老版本插件。社区桌面端不维护。
 >
 > 写进 profile 还不会改宿主。点会话标题旁的 **dsh-purge** → **清洗** → **应用**。成功会自动重启；补丁没打完不重启。重启后新开一轮对话，注入才进当前会话。
 >
@@ -100,7 +100,7 @@ Harness 不只是把问题交给模型。它还会在运行时改提示词、审
 
 | 宿主 | 用哪个版本 |
 | --- | --- |
-| dsh **0.2.0-rc.2 / 0.2.1-rc.2**（官方桌面 / 官方 `dsh web`） | **1.1.76** 及以上，本页命令装的就是这一档 |
+| dsh **0.2.0-rc.2 / 0.2.1-rc.2 / 0.2.1-rc.5 / 0.2.2-rc.3**（官方桌面 / 官方 `dsh web`） | **1.1.76** 及以上，本页命令装的就是这一档 |
 | dsh **0.1.7**（含 rc.1 / rc.2） | **1.1.39** 及更早，见[上游 Releases](https://github.com/YuJunZhiXue/dsh-purge/releases) |
 
 对不上的补丁会显示待应用或跳过，不会乱改文件。

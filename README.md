@@ -23,7 +23,7 @@
   <a href="README.md">English</a> | <a href="README.zh-CN.md">中文</a>
 </p>
 
-> **Official Web and the official desktop app are both supported.** Official `dsh web` uses profile `web`. The official desktop EXE (DeepSeek Harness **0.2.0-rc.2 / 0.2.1-rc.2**) uses profile `desktop`. Install and Apply them separately. This release targets dsh 0.2 only. Older dsh builds need the matching older plugin. Community Desktop is not maintained.
+> **Official Web and the official desktop app are both supported.** Official `dsh web` uses profile `web`. The official desktop EXE (DeepSeek Harness **0.2.0-rc.2 / 0.2.1-rc.2 / 0.2.1-rc.5 / 0.2.2-rc.3**) uses profile `desktop`. Install and Apply them separately. This release targets dsh 0.2 only. Older dsh builds need the matching older plugin. Community Desktop is not maintained.
 >
 > Adding the plugin to a profile does not patch the host. Click **dsh-purge** beside the session title → **Clean** → **Apply**. A successful Apply restarts; an unfinished Apply does not. After the restart, start a new chat — that is when the inject enters the session.
 >
@@ -100,7 +100,7 @@ The latest plugin supports **dsh 0.2** only — do not apply it to 0.1.x.
 
 | Host | Version to use |
 | --- | --- |
-| dsh **0.2.0-rc.2 / 0.2.1-rc.2** (official desktop / official `dsh web`) | **1.1.76** or newer; this page installs that line |
+| dsh **0.2.0-rc.2 / 0.2.1-rc.2 / 0.2.1-rc.5 / 0.2.2-rc.3** (official desktop / official `dsh web`) | **1.1.76** or newer; this page installs that line |
 | dsh **0.1.7** (incl. rc.1 / rc.2) | **1.1.39** or older; see [upstream Releases](https://github.com/YuJunZhiXue/dsh-purge/releases) |
 
 Unmatched patches stay pending or skipped; nothing is rewritten blindly.
