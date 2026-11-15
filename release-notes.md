@@ -1,8 +1,8 @@
-# 1.1.79
+# 2.0.0
 
 ## 中文
 
-- 版本 **1.1.79**：适配 dsh **0.2.2-rc.3**。用官方安装包解出的 `app.asar`（20,051 个文件）做真机比对，把 0.2.2 上失效的 15 条补丁全部补回。旧锚点全部保留，0.2.1-rc.5 上逐条状态零回退。
+- 版本 **2.0.0**：适配 dsh **0.2.2-rc.3**。版本号从 1.1.x 直接跳到 2.0.0 —— 0.2.2 把 run_code 执行器拆成独立包、前端 conversation 包改成单行 minified、审批链路整体搬家，补丁表随之重构，属于代际升级。用官方安装包解出的 `app.asar`（20,051 个文件）做真机比对，把 0.2.2 上失效的 15 条补丁全部补回。旧锚点全部保留，0.2.1-rc.5 上逐条状态零回退。
 - **补回的锚点（12 条代码/提示词）**：escalation 三条 —— `new Error(...)` 改 `SandboxEscalationError(msg, code)`、`displayReason` 对象字面量改 `escalationDisplayReason()`、`rejected/cancelled/unavailable` 三分支重写；重复调用守卫 —— post-execute 去掉了 `kind:"block"` 分支，只剩 spread 注入；system-prompt —— `assemble()` 的返回值多了 `tools`，两个 return 都要带上；ask 提示句换版成 "Approval prompts are enabled in this session…"；fs 观察策略 —— `editIntent` 收敛成 `requirePresent(target, actor, "edit")`，并补上 0.2.2 新增的 `deleteIntent`；agent-loop 两条 —— 消息守卫挪进 try 块（5-tab 缩进）、`assemble` 前要先取 model selection 与 toolSet；交付物提示词整段重写。
 - **补回的锚点（2 条桌面壳）**：`app/lib/main.js` 从 520 KB 涨到 828 KB 并重排，profile 兜底改挂 import 行，host close 回调换成 `code !== 0 && code !== null` 的新写法。
 - **目标搬家**：0.2.2 把 run_code / PTC 执行器拆成新包 `dsh-tool-executor-ptc`（`lib/index.js` + `lib/types/ptc.js`）；审批决策从 `dsh-tools/lib/types/index.js` 搬到 `pipeline.js`，而且 `lib/pipeline.js` 与 `lib/types/pipeline.js` 各有一份（缩进/引号风格还不同），两份都打；交付物提示词搬到 `dsh-deliverable-file-references`。`targetFiles` 已补这些目标。
@@ -12,7 +12,7 @@
 
 ## English
 
-- **1.1.79** adapts dsh-purge to dsh **0.2.2-rc.3**. Verified against the real `app.asar` extracted from the official installer (20,051 files): all 15 patches that had silently stopped matching on 0.2.2 are back. Every legacy anchor is kept, and the per-patch status on 0.2.1-rc.5 is byte-for-byte identical to before.
+- **2.0.0** adapts dsh-purge to dsh **0.2.2-rc.3**. The version line jumps from 1.1.x to 2.0.0 because 0.2.2 split the run_code executor into its own package, minified the conversation client bundle, and moved the approval chain wholesale — the patch table was rebuilt around it. Verified against the real `app.asar` extracted from the official installer (20,051 files): all 15 patches that had silently stopped matching on 0.2.2 are back. Every legacy anchor is kept, and the per-patch status on 0.2.1-rc.5 is byte-for-byte identical to before.
 - **Twelve code/prompt anchors restored**: the three escalation patches (`new Error(...)` → `SandboxEscalationError(msg, code)`, `displayReason` object literal → `escalationDisplayReason()`, rewritten `rejected/cancelled/unavailable` branches); the repeat-tool guard (post-execute lost its `kind:"block"` branch and only spreads context now); system-prompt (`assemble()` now returns `tools`, so both returns must carry it); the ask sentence, rewritten upstream to "Approval prompts are enabled in this session…"; the fs observation policy (`editIntent` collapsed into `requirePresent(target, actor, "edit")`, plus the new `deleteIntent` gate); two agent-loop anchors (the messages guard moved into a try block at 5-tab indent, and `assemble` is now preceded by model selection and tool-set resolution); and the rewritten deliverable prompt.
 - **Two desktop-shell anchors restored**: `app/lib/main.js` grew from 520 KB to 828 KB and was re-laid-out — the profile fallback now hangs off the import line, and the host close callback uses the new `code !== 0 && code !== null` form.
 - **Moved targets**: 0.2.2 split the run_code / PTC executor into a new package `dsh-tool-executor-ptc` (`lib/index.js` + `lib/types/ptc.js`); the approval decision moved from `dsh-tools/lib/types/index.js` to `pipeline.js`, which exists twice (`lib/pipeline.js` and `lib/types/pipeline.js`, with different indentation and quoting) — both are patched; the deliverable prompt moved to `dsh-deliverable-file-references`. `targetFiles` now covers all of them.
