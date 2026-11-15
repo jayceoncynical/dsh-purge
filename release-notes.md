@@ -1,3 +1,22 @@
+# 2.0.1
+
+## 中文
+
+- 版本 **2.0.1**：2.0.0 的补丁版，只动发布链路。补丁表、提示词、桌面壳锚点与 2.0.0 完全一致 —— 除 `.github/workflows/release.yml` 与版本串外，源码零 diff。
+- **Release 工作流收尾**：删掉「发布到公开分发仓库」那一段。dist 仓库从 1.1.77 起已撤回，这段 step 每次打 tag 都会去推一个已经不存在的仓库；现在只向源仓库发布，产物 `dsh-purge-2.0.1.tar.gz` / `.zip` 由 `git archive` 从被发布的那一个提交出，和 tag 指向的源码是同一份。
+- **发版守卫保持原样**：`release-notes.md` 首行必须等于 `# <package.json 版本>`，tag 必须指向本次待发布的提交，否则 CI 直接失败 —— 避免「标签指向旧源码」的假发布。
+- **版本串同步**：`package.json` 的 `dsh.install.tarball`、两份 README 里的三个安装地址、`dsh://` 深链的 `version` 与 `downloadUrl`，全部指向 2.0.1。
+- **验证**：`npm run check:syntax` 与 `npm run check:client` 通过；打 tag 前 `git status` 干净。
+
+## English
+
+- **2.0.1** is a patch release on top of 2.0.0. It touches the release pipeline only: the patch table, prompts and desktop-shell anchors are byte-identical to 2.0.0 (same source tree, no diff outside `.github/workflows/release.yml` and the version strings).
+- **Release workflow cleanup**: the publish step aimed at the retired public distribution repository is gone. That repository was withdrawn in 1.1.77, so the step only ever pushed to a repo that no longer exists. Publishing now happens in the source repository alone, with `dsh-purge-2.0.1.tar.gz` / `.zip` produced by `git archive` from the exact commit being released.
+- **Release guards unchanged**: the first line of `release-notes.md` must equal `# <package.json version>`, and the tag must point at the commit being released, or CI fails — no more releases whose tag points at older source.
+- **Version strings synced**: `dsh.install.tarball` in `package.json`, the three install URLs in both READMEs, and the `version` / `downloadUrl` in the `dsh://` deep link now all read 2.0.1.
+- **Verification**: `npm run check:syntax` and `npm run check:client` pass; `git status` was clean before tagging.
+
+---
 # 2.0.0
 
 ## 中文
