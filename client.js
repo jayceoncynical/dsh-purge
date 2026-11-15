@@ -136,6 +136,20 @@ window.__ModuleLoader__.load({ id: "dsh-purge", factory: (require) => {
 			"dock.full": "全面浏览",
 			"dock.close": "收起",
 			"dock.unauthorized": "未授权",
+			"flow.title": "清洗流程",
+			"flow.apply": "应用",
+			"flow.revert": "还原",
+			"flow.uninstall": "卸载",
+			"flow.home": "家目录",
+			"flow.locate": "宿主",
+			"flow.override": "提示词",
+			"flow.patch": "补丁",
+			"flow.shim": "启动器",
+			"flow.flash": "闪窗",
+			"flow.seed": "落盘",
+			"flow.done": "完成",
+			"flow.revert.step": "还原",
+			"flow.cleanup": "清理",
 			"welcome.title": "用户须知",
 			"welcome.lead": "首次安装本插件时请阅读以下说明。确认后本窗不再弹出。",
 			"welcome.warn": "本插件免费开源。任何背着作者私自售卖、付费倒卖或借本项目盈利的行为，作者将依法追究法律责任。",
@@ -476,6 +490,20 @@ window.__ModuleLoader__.load({ id: "dsh-purge", factory: (require) => {
 			"dock.full": "Full view",
 			"dock.close": "Collapse",
 			"dock.unauthorized": "Unauthorized",
+			"flow.title": "Clean flow",
+			"flow.apply": "Apply",
+			"flow.revert": "Restore",
+			"flow.uninstall": "Uninstall",
+			"flow.home": "Home",
+			"flow.locate": "Host",
+			"flow.override": "Prompt",
+			"flow.patch": "Patch",
+			"flow.shim": "Launcher",
+			"flow.flash": "Flash",
+			"flow.seed": "Write",
+			"flow.done": "Done",
+			"flow.revert.step": "Restore",
+			"flow.cleanup": "Cleanup",
 			"welcome.title": "User notice",
 			"welcome.lead": "Please read this on first install. After you confirm, it will not appear again.",
 			"welcome.warn": "This plugin is free and open source. Anyone who sells, resells, or profits from it behind the author's back may face legal action.",
@@ -826,7 +854,21 @@ window.__ModuleLoader__.load({ id: "dsh-purge", factory: (require) => {
 .dshp-metric b{font-family:var(--dshp-display);font-size:18px;font-weight:500;line-height:1.2}
 .dshp-metric span{font-size:11px;color:var(--dshp-mute)}
 .dshp-bar{height:3px;border-radius:99px;background:var(--dshp-line);overflow:hidden;margin:8px 0 14px}
-.dshp-bar>i{display:block;height:100%;background:var(--dshp-accent);width:0;transition:width .4s var(--dshp-ease)}
+.dshp-bar>i{display:block;height:100%;width:100%;border-radius:inherit;transform:scaleX(0);transform-origin:left center;background-color:currentColor;background-image:linear-gradient(var(--dshp-accent,transparent),var(--dshp-accent,transparent));transition:transform 500ms var(--dshp-ease)}
+.dshp-flow{display:flex;align-items:center;gap:0;margin:0 0 14px;overflow-x:auto;padding:4px 0}
+.dshp-flow-kind{font:12px/16px var(--dshp-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dshp-mute);margin:0 12px 0 0;flex:0 0 auto}
+.dshp-flow-node{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:44px;opacity:.42;transition:opacity 500ms var(--dshp-ease),transform 500ms var(--dshp-ease)}
+.dshp-flow-node b{width:22px;height:22px;border-radius:99px;border:1px solid var(--dshp-line);display:flex;align-items:center;justify-content:center;font:11px/1 var(--dshp-mono);background:var(--dshp-paper)}
+.dshp-flow-node em{font-style:normal;font-size:12px;line-height:16px;color:var(--dshp-mute);white-space:nowrap}
+.dshp-flow-node.is-cur{opacity:1;transform:translateY(-2px)}
+.dshp-flow-node.is-cur b{border-color:var(--dshp-accent);background:var(--dshp-accent-soft);box-shadow:0 0 0 4px var(--dshp-accent-soft)}
+.dshp-flow-node.is-done{opacity:.92}
+.dshp-flow-node.is-done b{border-color:var(--dshp-ok);background:color-mix(in srgb,var(--dshp-ok) 18%,transparent);color:var(--dshp-ok)}
+.dshp-flow-node.is-bad b{border-color:var(--dshp-bad);color:var(--dshp-bad);background:color-mix(in srgb,var(--dshp-bad) 14%,transparent)}
+.dshp-flow-wire{flex:1 1 12px;min-width:10px;height:2px;background:var(--dshp-line);position:relative;overflow:hidden;margin:0 4px 16px}
+.dshp-flow-wire.is-on{background:color-mix(in srgb,var(--dshp-accent) 55%,var(--dshp-line))}
+.dshp-flow-wire.is-on>i{position:absolute;inset:0 auto 0 -40%;width:40%;background:var(--dshp-accent);animation:dshp-flow-pulse 1.4s cubic-bezier(.65,0,.35,1) infinite}
+@keyframes dshp-flow-pulse{to{transform:translateX(360%)}}
 .dshp-group{border:1px solid var(--dshp-line);margin:0 0 8px;background:var(--dshp-bg);border-radius:8px;overflow:hidden}
 .dshp-group-h{width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;border:0;background:transparent;color:inherit;cursor:pointer;font:inherit;text-align:left}
 .dshp-group-h:hover{background:var(--dshp-fill)}
@@ -1131,6 +1173,55 @@ body:not([data-ds-dark-theme]) .dshp-auth-ops button.primary{background:var(--ds
 				else out.skipped += 1;
 			}
 			return out;
+		}
+
+		const FLOW_STEPS = {
+			apply: ["home", "locate", "override", "patch", "shim", "flash", "seed", "done"],
+			revert: ["locate", "revert", "shim", "done"],
+			uninstall: ["locate", "revert", "shim", "flash", "cleanup", "done"],
+		};
+
+		function flowLabel(id, t) {
+			if (id === "revert") return t("flow.revert.step");
+			if (id === "cleanup") return t("flow.cleanup");
+			return t("flow." + id);
+		}
+
+		/** 清洗流程条：apply / revert / uninstall 三种，跟着服务端 apply_progress 走。 */
+		function ApplyFlow({ progress, busy, t }) {
+			const kind = (progress && progress.kind) || "apply";
+			const steps = FLOW_STEPS[kind] || FLOW_STEPS.apply;
+			const stage = (progress && progress.stage) || "idle";
+			const failed = Boolean(progress && progress.error);
+			const active = Boolean(busy || (progress && progress.active));
+			const idx = steps.indexOf(stage === "restart" ? "done" : stage);
+			return h("div", {
+				className: "dshp-flow" + (active ? " is-on" : "") + (failed ? " is-bad" : ""),
+				"aria-label": t("flow.title"),
+				"data-stage": stage,
+			},
+				h("span", { className: "dshp-flow-kind" }, t("flow." + kind)),
+				steps.flatMap((id, i) => {
+					const done = idx > i || (stage === "done" && !failed);
+					const cur = active && idx === i && stage !== "idle";
+					const bad = failed && idx === i;
+					const nodes = [];
+					if (i) {
+						nodes.push(h("span", {
+							key: "w-" + id,
+							className: "dshp-flow-wire" + ((done || cur) ? " is-on" : ""),
+						}, h("i")));
+					}
+					nodes.push(h("span", {
+						key: id,
+						className: "dshp-flow-node" + (done ? " is-done" : "") + (cur ? " is-cur" : "") + (bad ? " is-bad" : ""),
+					},
+						h("b", null, String(i + 1)),
+						h("em", null, flowLabel(id, t)),
+					));
+					return nodes;
+				}),
+			);
 		}
 
 		function PatchGroups({ state }) {
@@ -1597,6 +1688,31 @@ body:not([data-ds-dark-theme]) .dshp-auth-ops button.primary{background:var(--ds
 				return () => clearTimeout(timer);
 			}, [loadAll]);
 
+			/* 应用/还原/卸载进行中：每 450ms 取一次 status，把 apply_progress 灌进流程条。 */
+			useEffect(() => {
+				if (!patchBusy && !uninstallBusy) return undefined;
+				let stop = false;
+				const tick = () => {
+					apiJson("/dsh-purge/status")
+						.then((d) => {
+							if (stop || !d) return;
+							if (d.apply_progress) {
+								setState((prev) => Object.assign({}, prev || {}, d.ok ? d : { apply_progress: d.apply_progress }));
+								return;
+							}
+							if (!d.ok) return;
+							setState((prev) => Object.assign({}, prev || {}, d));
+						})
+						.catch(() => {});
+				};
+				tick();
+				const id = setInterval(tick, 450);
+				return () => {
+					stop = true;
+					clearInterval(id);
+				};
+			}, [patchBusy, uninstallBusy]);
+
 			const rejectNeedPrompt = useCallback((tr) => {
 				setAskRestart(false);
 				setNotice({ kind: "error", text: tr("need.prompt") });
@@ -1611,6 +1727,15 @@ body:not([data-ds-dark-theme]) .dshp-auth-ops button.primary{background:var(--ds
 					setPatchBusy(true);
 					setAskRestart(false);
 					setNotice({ kind: "idle", text: "" });
+					/* 点下去先把流程条点亮，之后由 450ms 轮询接住服务端的真实 stage。 */
+					setState((prev) => Object.assign({}, prev || {}, {
+						apply_progress: {
+							active: true,
+							kind: action === "revert" ? "revert" : "apply",
+							stage: action === "revert" ? "locate" : "home",
+							error: "",
+						},
+					}));
 					const applyContent = action === "apply" ? readPromptBox() : "";
 					fetch("/dsh-purge/" + action, {
 						method: "POST",
@@ -1831,7 +1956,8 @@ body:not([data-ds-dark-theme]) .dshp-auth-ops button.primary{background:var(--ds
 			const tally = located ? tallyPatches(patchRowsOf(s)) : { applied: 0, pending: 0, unmatched: 0, skipped: 0, total: 0 };
 			const total = tally.total;
 			const applied = tally.applied;
-			const pct = located && total ? Math.round((applied / total) * 100) : 0;
+			const pctRaw = located && total > 0 ? (Number(applied) / Number(total)) * 100 : 0;
+			const pct = Number.isFinite(pctRaw) ? Math.max(0, Math.min(100, Math.round(pctRaw))) : 0;
 			const metricNotes = [];
 			if (tally.pending) metricNotes.push(t("metric.pendingShort", { n: tally.pending }));
 			if (tally.unmatched) metricNotes.push(t("metric.unmatchedShort", { n: tally.unmatched }));
@@ -1941,7 +2067,16 @@ body:not([data-ds-dark-theme]) .dshp-auth-ops button.primary{background:var(--ds
 					h("div", { className: "dshp-metric" }, h("div", { className: "dshp-skel" }), h("div", { className: "dshp-skel", style: { width: "40%" } })),
 					h("div", { className: "dshp-metric" }, h("div", { className: "dshp-skel" }), h("div", { className: "dshp-skel", style: { width: "40%" } })),
 				),
-				h("div", { className: "dshp-bar", "aria-hidden": "true" }, h("i", { style: { width: pct + "%" } })),
+				h(ApplyFlow, { progress: s && s.apply_progress, busy: patchBusy || uninstallBusy, t }),
+				h("div", {
+					className: "dshp-bar",
+					role: "progressbar",
+					"aria-valuemin": 0,
+					"aria-valuemax": total || 0,
+					"aria-valuenow": applied || 0,
+					"aria-valuetext": pct + "%",
+					"data-pct": pct,
+				}, h("i", { style: { transform: "scaleX(" + (pct / 100) + ")" } })),
 				h(PatchGroups, { state: s }),
 				h(HooksDenySection, { onSaved: loadAll }),
 				h("div", { className: "dshp-row", style: { marginTop: 14 } },
@@ -8540,9 +8675,43 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
 			);
 		}
 
+		/** 首页（新会话）才有「模式 + 工作区」那一排；一发言，宿主就把这块收掉。 */
+		function useHeroPresence() {
+			const [present, setPresent] = useState(false);
+			useEffect(() => {
+				if (typeof document === "undefined") return undefined;
+				let dead = false;
+				const probe = () => {
+					if (dead) return;
+					const row =
+						document.querySelector("[data-dsh-hero-workspace-row]") ||
+						document.querySelector("[data-conversation-hero]") ||
+						document.querySelector('[class*="heroWorkspaceRow" i]') ||
+						document.querySelector('[class*="hero" i][class*="workspace" i][class*="row" i]');
+					setPresent((prev) => (prev === !!row ? prev : !!row));
+				};
+				probe();
+				let obs = null;
+				try {
+					obs = typeof MutationObserver !== "undefined" ? new MutationObserver(probe) : null;
+					if (obs && document.body) obs.observe(document.body, { childList: true, subtree: true });
+				} catch { obs = null; }
+				const iv = setInterval(probe, 1200);
+				return () => {
+					dead = true;
+					try { obs?.disconnect(); } catch { /* ignore */ }
+					clearInterval(iv);
+				};
+			}, []);
+			return present;
+		}
+
 		function PurgeLauncher() {
 			const t = useT();
 			const st = useDock();
+			const hero = useHeroPresence();
+			/* 只在首页露脸：发言后首页锚点消失，悬浮球跟着收；面板开着时留着，方便再点一次收起。 */
+			if (!hero && !st.open) return null;
 			return h("button", {
 				type: "button",
 				className: "dshp-launch",

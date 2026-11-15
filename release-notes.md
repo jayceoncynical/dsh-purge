@@ -1,3 +1,24 @@
+# 2.0.2
+
+## 中文
+
+- 版本 **2.0.2**：把 **清洗流程条** 搬回来了，并修好指标卡下面那条进度条。
+- **流程条（应用 / 家目录 / 宿主 / 提示词 / 补丁 / 启动器 / 闪窗 / 落盘 / 完成）**：这套东西原本只在 1.1.9x 那条线上（2.0.x 从 1.1.76 分出，一直没有）。现在整条链路补齐 —— 服务端新增 `lib/apply-progress.js`（纯内存，不落盘、不进 `gatherState`），`/dsh-purge/apply` 按 `home → locate → override → patch → shim → flash → seed → done` 逐段打点；`/dsh-purge/revert` 走 `locate → revert → shim → done`；`/dsh-purge/uninstall` 走 `locate → revert → shim → flash → cleanup → done`。`/dsh-purge/status` 把 `apply_progress` 一起返回，前端每 450ms 取一次；点下按钮先把第一步点亮，避免半秒空白。失败的那一步标红，跑完停在「完成」。
+- **`core.applyPatchesAllHosts` 补 `onHost(info)` 回调**：多宿主（官方桌面 + npm 全局）时按处理顺序推进度，`applied` 跟着涨。
+- **进度条修好**：2.0.x 曾把 1.1.92 的 `transform: scaleX(pct)` 改成 `width: pct%`，在 0.2.2 宿主上轨道能画、填充画不出来。现在恢复 `scaleX`，并用 `currentColor` 打底 + 品牌色叠加，宿主主题换 token 也不会变成透明条；百分比做了 0–100 钳制，元素上带 `data-pct` 方便排查。
+- **悬浮球只在首页露脸**：`PurgeLauncher` 原来无条件固定在右下角，发言后压着发送键。现在跟首页锚点（`[data-dsh-hero-workspace-row]` / `[data-conversation-hero]`）联动 —— 新会话显示，进入对话后自动收；面板开着时保留，方便再点一次收起。对话里要开面板还有「对话 / 轨迹 / 上下文」那排的 `dsh-purge` chip。
+- **验证**：`npm run check:syntax` 89 文件、`npm run check:client` 产物一致、`npm test` 151 通过 / 1 跳过。
+
+## English
+
+- **2.0.2** brings back the **clean-flow stepper** and fixes the progress bar under the metric cards.
+- **The stepper (Apply / Home / Host / Prompt / Patch / Launcher / Flash / Write / Done)** only ever existed on the 1.1.9x line; 2.0.x branched from 1.1.76 and never carried it. The whole chain is now restored: a new `lib/apply-progress.js` keeps the job in memory (never persisted, never part of `gatherState`); `/dsh-purge/apply` reports `home → locate → override → patch → shim → flash → seed → done`; `/dsh-purge/revert` runs `locate → revert → shim → done`; `/dsh-purge/uninstall` runs `locate → revert → shim → flash → cleanup → done`. `/dsh-purge/status` returns `apply_progress` and the panel polls it every 450 ms. Clicking the button lights the first step immediately so there is no blank half-second; a failing step turns red, and the run settles on "Done".
+- **`core.applyPatchesAllHosts` now accepts `onHost(info)`**, so multiple hosts (official desktop plus a global npm install) advance the stage in order and `applied` counts up.
+- **The progress bar is fixed**: 2.0.x had replaced 1.1.92's `transform: scaleX(pct)` with `width: pct%`, which drew the track but not the fill on a 0.2.2 host. It is back to `scaleX`, with a `currentColor` base and the brand colour layered on top, so a theme token change can no longer make it transparent; the percentage is clamped to 0–100 and exposed as `data-pct` for diagnosis.
+- **The floating launcher only appears on the home screen**: `PurgeLauncher` used to sit pinned at the bottom-right regardless of context, covering the send button after the first message. It now follows the hero anchor (`[data-dsh-hero-workspace-row]` / `[data-conversation-hero]`) — visible for a new session, gone once a conversation starts, and kept while the panel is open so it can still toggle closed. Inside a conversation the `dsh-purge` chip in the conversation/trace/context row remains the entry point.
+- **Verification**: `npm run check:syntax` 89 files, `npm run check:client` in sync, `npm test` 151 passing / 1 skipped.
+
+---
 # 2.0.1
 
 ## 中文
