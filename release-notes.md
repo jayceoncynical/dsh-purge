@@ -1,3 +1,24 @@
+# 2.0.3
+
+## 中文
+
+- 版本 **2.0.3**：只动声明层与版本串。补丁表、提示词文本、桌面壳锚点与 2.0.2 完全一致 —— 除 `package.json`、两份 README 与本文件外，源码零 diff。
+- **适配范围补到 0.2.2-rc.5**：`package.json` 的 `dshTarget` 增加 `0.2.2-rc.4` / `0.2.2-rc.5`；两份 README 顶部的支持声明与「适配范围」表同步到同一列表。
+- **核对方式**：把 rc.3 与 rc.5 官方安装包里的 `app.asar` 整个解开（各 338 个 `@deepseek-ai` 包、两万上下文件），对整棵树跑只读探针和 `apply`。86 条补丁 / 195 条真实 pattern 逐条同值，锚点零回归；两版 `apply` 报告逐条相同（`deadHard` 为空），第二次 `apply` 整树哈希不变（幂等）。桌面壳 `lib/main.js` 两版只差 `desktopClientVersion()` 里的版本字面量（848,505 字节里一个字符），`#45 / #46 / #82 / #83 / #84` 的锚点全部命中；rc.4 的桌面安装包已从官方 feed 撤下，因此按含 rc.4 修复的 rc.5 核对。
+- **上游行为变化无侵入**：rc.4 把模型拒答的错误码从 `MALFORMED_RESPONSE` 改成 `CONTENT_REFUSED`，插件里没有依赖旧码的逻辑（拒答看门狗读的是 `assistant/message` 正文），无需改动；rc.5 取消 `dsh-base` 里固定的 `searchProvider`，补丁表里没有这个锚点，base 上的 `#7 / #8 / #21 / #63` 照旧命中。
+- **版本串同步**：`package.json` 的 `version` 与 `dsh.install.tarball`、两份 README 的安装地址、`dsh://` 深链的 `version` 与 `downloadUrl`，全部指向 2.0.3。
+- **验证**：`npm run check:syntax` 89 文件、`npm run check:client` 产物一致、`npm test` 151 通过 / 1 跳过。
+
+## English
+
+- **2.0.3** touches the declaration layer and version strings only. The patch table, prompt text and desktop-shell anchors are byte-identical to 2.0.2 — no source diff outside `package.json`, the two READMEs and this file.
+- **Support list extended to 0.2.2-rc.5**: `dshTarget` in `package.json` gains `0.2.2-rc.4` / `0.2.2-rc.5`, and both READMEs carry the same list in the header note and the support table.
+- **How it was checked**: each official installer's `app.asar` was unpacked whole (338 `@deepseek-ai` packages, roughly twenty thousand files) for rc.3 and rc.5, then probed read-only and applied. All 86 patches / 195 live patterns report the same values on both trees with zero anchor regressions; the two `apply` reports are identical entry by entry (`deadHard` empty), and a second `apply` leaves the tree hash unchanged (idempotent). The desktop shell `lib/main.js` differs between the two builds only in the version literal inside `desktopClientVersion()` — one character out of 848,505 bytes — so `#45 / #46 / #82 / #83 / #84` still match. rc.4's desktop installer has been withdrawn from the official feed, so verification ran against rc.5, which carries rc.4's fixes.
+- **Upstream behaviour changes do not intrude**: rc.4 renamed the model-refusal error code from `MALFORMED_RESPONSE` to `CONTENT_REFUSED`, and nothing in the plugin keys off the old code (the refusal watchdog reads `assistant/message` text), so no change was needed; rc.5 dropped the pinned `searchProvider` from `dsh-base`, which the patch table never anchored on, so `#7 / #8 / #21 / #63` keep matching.
+- **Version strings synced**: `version` and `dsh.install.tarball` in `package.json`, the install URLs in both READMEs, and the `dsh://` deep link's `version` / `downloadUrl` now all read 2.0.3.
+- **Verification**: `npm run check:syntax` 89 files, `npm run check:client` in sync, `npm test` 151 passing / 1 skipped.
+
+---
 # 2.0.2
 
 ## 中文
