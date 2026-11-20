@@ -1,3 +1,26 @@
+# 2.0.5
+
+## 中文
+
+- 版本 **2.0.5**：修掉「密封桌面换包要手动改文件名」这条链路。补丁表、提示词文案与 2.0.4 一致，只动换包与重启。
+- **换包助手不再被重启标记劝退**：官方桌面换 `app.asar` 时，后台助手原先一看到 `%TEMP%\dsh-purge-official-restarting` 就直接 `exit 0`。更新流程恰好会写这个标记，于是助手退出、`app.asar` 留在原地，补丁全打进 `resources/app` 却没人读。现在助手改成等 50 秒后继续，并在等待期间续锁心跳。
+- **锁按心跳判活，不再空等 30 分钟**：换包锁 `app.asar.rename-pending` 之前只要“30 分钟内写过”就当成“还在排期”，即使助手早已退出。新增 `asarSwapLockIsLive()`，只看锁的 mtime 心跳（30 秒窗口）；心跳停了就清锁重排，重复点击也不会起两个助手。
+- **主重启路径失败时自动降级**：`restartOfficialHarness` 返回 `already`（标记或日志过期）时，之前会静默当成“已在重启”，实际什么都没发生。现在退回后台换包助手，仍然在宿主退出后改名并自动拉起。
+- **点「应用」自己重启**：密封桌面上应用成功后，插件直接排换包重启，不再依赖客户端点「重启」。补丁写进 `resources/app` → 宿主退出 → `app.asar` 改名 → 自动拉起 → 新宿主读到打过补丁的代码，全程无手动步骤。
+- **开机补排**：如果上次被打断，开机发现 `app.asar` 还在、解开树里补丁标记齐全，会自动补排一次换包，下次退出时完成。
+- **验证**：新增 `换包锁只在助手还在续心跳时才算进行中` 与 `换包助手：宿主不在时改名、清锁并拉起`（后者把真实助手脚本跑一遍，用假 `app.asar` 与假 exe 断言改名、`.bak` 保留、锁清理、宿主被拉起）；`npm run check:syntax` 87 文件、`npm run check:client` 产物一致、`npm test` 157 通过 / 1 跳过。
+
+## English
+
+- **2.0.5** fixes the "sealed desktop swap still needs a manual rename" path. The patch table and prompt text are unchanged from 2.0.4; only the swap/restart logic moved.
+- **The idle swap helper no longer bails on the restart flag**: it used to `exit 0` as soon as `%TEMP%\dsh-purge-official-restarting` existed — and the update flow writes exactly that flag, so the helper quit, `app.asar` stayed in place, and the patches written to `resources/app` were never read. It now waits 50 seconds and continues, keeping the lock heartbeat alive while it waits.
+- **The lock is judged by heartbeat, not by a 30-minute window**: `app.asar.rename-pending` used to count as "already scheduled" for 30 minutes even when the helper was long gone. `asarSwapLockIsLive()` now looks at the lock mtime with a 30-second window; a dead helper's lock is cleared and rescheduled, and repeated clicks still spawn only one helper.
+- **Automatic fallback when the primary restart path bails**: `restartOfficialHarness` returning `already` (stale flag or log) used to be treated as success while nothing happened. It now falls back to the idle swap helper, which still renames and relaunches after the host exits.
+- **Apply restarts on its own**: on a sealed desktop host, a successful apply now schedules the swap restart directly instead of waiting for the client's restart button — patches go into `resources/app`, the host exits, `app.asar` is renamed, the host relaunches and reads patched code, with no manual step.
+- **Boot-time re-arm**: if an earlier swap was interrupted, a boot that finds `app.asar` still present with clean patch markers in the extracted tree schedules the swap again, to complete on the next quit.
+- **Verification**: new tests cover heartbeat liveness and an end-to-end run of the real helper script against a fake `app.asar` and fake exe (rename, `.bak` retained, lock cleared, host relaunched); `npm run check:syntax` 87 files, `npm run check:client` in sync, `npm test` 157 passing / 1 skipped.
+
+---
 # 2.0.4
 
 ## 中文
