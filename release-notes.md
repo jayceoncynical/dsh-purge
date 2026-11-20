@@ -1,3 +1,30 @@
+# 2.0.4
+
+## 中文
+
+- 版本 **2.0.4**：全仓审计后的修复版。补丁表、提示词文案、桌面壳锚点与 2.0.3 一致；修的是补丁之外那些会删文件、算错版本、读不到提示词、发布产物不对的代码。
+- **两处会删用户文件的问题**：技能导入的“源目录重叠”保护一直失效 —— `lib/skills.js` 用了没导入的 `fs`，每次抛 `ReferenceError` 被吞掉后退化成 `path.resolve`，指向 `skills` 的目录链接能绕过检查，导入时先删后拷把源删掉；现在改用 `realpathSync`，并加了链接场景的回归测试。卸载时按子串判断“可删插件树”，`node_modules/dsh-purge-fork`、`dsh-purge-2.0.3` 这类邻居目录会被一起 `rmSync` 删除；现在只认 `node_modules/dsh-purge` 整段，插件自己的安装根由调用方直接登记。
+- **版本比较**：`versionIsNewer` 的预发布段按字符串比大小，`2.0.3-rc.10` 被判成比 `rc.9` 旧，更新面板永远提示不出来；改成逐段数值比较，`latestStableVersion` 一并修正。
+- **默认提示词改回明文**：它此前只以 AES 密文存在 `lib/asset-table.js`，明文源被 `.gitignore` 排除，`npm run embed-prompt` 必然抛错，用户也无从审阅将被注入的系统提示词；而密钥就在同包里（三行即可解开）。现在 `lib/default-prompt-inject.md` 明文入库并随包发布，删掉 `asset-table.js` / `table-key.js` / `table-read.js` 与那个脚本，`defaultOverrideText()` 直接读文件，内容逐字不变。
+- **还原后备份不清理**：内容已等于备份时 `revertAll` 只记 skipped、不删 `.dshpurge.bak`，`has_backup` 于是永远为真；现在同样删除备份。
+- **状态接口变快**：面板每 60 秒、应用期间每 450 毫秒取一次状态，此前每次都重读全部目标文件（含 848KB 的 `main.js`）。新增按 `路径 + mtime + size` 的文本缓存，实测同一棵树两次 `patchStatus` 从 205ms 降到 104ms，状态完全一致。
+- **发布链路**：`git archive` 会把 `tests/`、`.github/`、`release-notes.md`、内部评审文档一起塞进安装包；新增 `.gitattributes` 的 `export-ignore` 排除。Release 正文此前用整份 `release-notes.md`（854 行全历史），现在只切出本版本一节（16 行）。
+- **其它**：`cordis.patch.yml` 删掉 insert 之前那条重复的 `- id: dsh-purge`（永远匹配不到）；`formatSize` 在 `rules.js` 里零调用，删除；`lib/zip-extract.js` 的 `nodeOnly` 只写不读，现在命中时只走 Node 解压以保证名称口径；`dsh plugin --profile desktop add` 会被上游 CLI 直接拒绝，两份 README 改为深链或手动安装；`/rewind` 在文档里要求带 `once` / `round`；`flash-silence.js` 的 `HIDDEN_EXEC` 未导入导致 schtasks 删除分支永远走不到，已修；语法检查纳入 `presets/`；删掉失效的 `.npmignore`；`.gitignore` 补上发版会生成的 `.tar.gz` / `.zip`。
+- **验证**：新增 `tests/audit-fixes.test.mjs`（4 条：预发布比较、卸载判定、链接重叠、默认提示词可读）；`npm run check:syntax` 87 文件、`npm run check:client` 产物一致、`npm test` 155 通过 / 1 跳过。
+
+## English
+
+- **2.0.4** is the post-audit fix release. The patch table, prompt text and desktop-shell anchors are unchanged from 2.0.3; what changed is the code around them — the parts that could delete user files, mis-order versions, fail to load the default prompt, or ship the wrong archive.
+- **Two ways it could delete user files**: the skill-import overlap guard never worked — `lib/skills.js` referenced an unimported `fs`, so every call threw `ReferenceError`, was swallowed, and fell back to `path.resolve`; a directory link pointing at `skills` slipped through and the import deleted the source before copying. It now uses `realpathSync`, with a junction regression test. Uninstall also judged "deletable plugin tree" by substring, so sibling directories such as `node_modules/dsh-purge-fork` or `dsh-purge-2.0.3` were `rmSync`ed along with it; it now matches the whole `node_modules/dsh-purge` segment only, and the plugin's own install root is registered directly by its caller.
+- **Version comparison**: `versionIsNewer` compared the prerelease tail as a string, so `2.0.3-rc.10` ranked below `rc.9` and the update panel never offered it; prerelease identifiers are now compared segment by segment, which also fixes `latestStableVersion`.
+- **Default prompt back to plaintext**: it existed only as an AES blob in `lib/asset-table.js`, the plaintext source was git-ignored, `npm run embed-prompt` could only throw, and users could not read the system prompt injected into their sessions — while the key shipped in the same package (three lines decrypt it). `lib/default-prompt-inject.md` is now committed and published, `asset-table.js` / `table-key.js` / `table-read.js` and the script are gone, and `defaultOverrideText()` reads the file; the text is byte-identical.
+- **Backups after revert**: when the live file already equalled its backup, `revertAll` recorded `skipped` without deleting the `.dshpurge.bak`, so `has_backup` stayed true forever; the backup is now removed too.
+- **Faster status endpoint**: the panel polls every 60 s (every 450 ms during apply) and each poll used to re-read every target file, including the 848 KB `main.js`. A text cache keyed by `path + mtime + size` brings two `patchStatus` calls on the same tree from 205 ms to 104 ms with identical results.
+- **Release pipeline**: `git archive` used to ship `tests/`, `.github/`, `release-notes.md` and internal review docs inside the installer; a new `.gitattributes` marks them `export-ignore`. The release body used the entire `release-notes.md` (854 lines of history) and now carries only the current section (16 lines).
+- **Also**: dropped the duplicate `- id: dsh-purge` in `cordis.patch.yml` that could never match; removed the uncalled `formatSize` from `rules.js`; `lib/zip-extract.js` now actually honours `nodeOnly` by restricting extraction to Node; both READMEs no longer tell desktop users to run an install command the upstream CLI rejects; `/rewind` is documented as `/rewind once` or `/rewind round`; `flash-silence.js` imports `HIDDEN_EXEC`, so its schtasks deletion branch is reachable again; the syntax check now covers `presets/`; deleted the ineffective `.npmignore`; `.gitignore` covers the `.tar.gz` / `.zip` release artifacts.
+- **Verification**: new `tests/audit-fixes.test.mjs` (prerelease ordering, uninstall predicate, link overlap, default prompt readable); `npm run check:syntax` 87 files, `npm run check:client` in sync, `npm test` 155 passing / 1 skipped.
+
+---
 # 2.0.3
 
 ## 中文

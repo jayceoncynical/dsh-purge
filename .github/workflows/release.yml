@@ -57,6 +57,9 @@ jobs:
               exit 1
             fi
           fi
+          # Release 正文只放本版本那一节；release-notes.md 是全历史，整份贴上去会有几百行旧版本。
+          node -e 'const fs=require("node:fs");const v=require("./package.json").version;const t=fs.readFileSync("release-notes.md","utf8");const hit=t.split(/\n(?=# )/).find((s)=>s.startsWith("# "+v+"\n"));if(!hit){console.error("release-notes.md 缺少 # "+v+" 一节");process.exit(1)}fs.writeFileSync("release-body.md",hit.trimEnd()+"\n");'
+          test -s release-body.md
           # DSH 的 install-spec 只认 .tgz / .tar.gz，zip 只给 dsh:// 深链用，两份都出
           tgz="dsh-purge-${version}.tar.gz"
           zip="dsh-purge-${version}.zip"
@@ -88,7 +91,7 @@ jobs:
             gh release upload "$tag" "$tgz" "$zip" --clobber
             exit 0
           fi
-          args=(release create "$tag" --title "$tag" --notes-file release-notes.md)
+          args=(release create "$tag" --title "$tag" --notes-file release-body.md)
           if git rev-parse -q --verify "refs/tags/${tag}^{}" >/dev/null; then
             :
           else

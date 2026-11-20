@@ -4,7 +4,7 @@
 
 <h1 align="center">⚔️ DeepSeek Harness cybersecurity red-team tool (dsh-purge)</h1>
 
-<p align="center"><strong>Version 2.0.3</strong></p>
+<p align="center"><strong>Version 2.0.4</strong></p>
 
 <p align="center">
   <em>DeepSeek Harness jailbreak: every model, swap prompts per model. Default prompt targets the domestic model 小码酱.</em>
@@ -100,7 +100,7 @@ The latest plugin supports **dsh 0.2** only — do not apply it to 0.1.x.
 
 | Host | Version to use |
 | --- | --- |
-| dsh **0.2.0-rc.2 / 0.2.1-rc.2 / 0.2.1-rc.5 / 0.2.2-rc.3 / 0.2.2-rc.4 / 0.2.2-rc.5** (official desktop / official `dsh web`) | **2.0.3** or newer; this page installs that line |
+| dsh **0.2.0-rc.2 / 0.2.1-rc.2 / 0.2.1-rc.5 / 0.2.2-rc.3 / 0.2.2-rc.4 / 0.2.2-rc.5** (official desktop / official `dsh web`) | **2.0.4** or newer; this page installs that line |
 | dsh **0.1.7** (incl. rc.1 / rc.2) | **1.1.39** or older; see [upstream Releases](https://github.com/YuJunZhiXue/dsh-purge/releases) |
 
 Unmatched patches stay pending or skipped; nothing is rewritten blindly.
@@ -116,13 +116,13 @@ Web and the official desktop EXE are the two maintained hosts. **Install both. A
 **Web (official `dsh web`)**
 
 ```sh
-dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-2.0.3.tar.gz
+dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-2.0.4.tar.gz
 ```
 
 **Desktop (official EXE)**
 
 ```sh
-dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-2.0.3.tar.gz
+# The desktop app owns its profile; the CLI cannot install into it. Use the deep link above or the Manual install section.
 ```
 
 If this directory is already a clone, use `add .` instead of the URL. If `dsh` is not on PATH, use [Manual install](#manual).
@@ -132,7 +132,7 @@ There is no npm package — use the release URL above.
 For the desktop client you can also click the button (`dsh://` deep link):
 
 <p align="center">
-  <a href="dsh://plugin/install?id=dsh-purge&name=dsh-purge&version=2.0.3&repo=jayceoncynical%2Fdsh-purge&permissions=%E7%B3%BB%E7%BB%9F%E6%8F%90%E7%A4%BA%E8%AF%8D%E6%B3%A8%E5%85%A5%2C%E6%9C%AC%E6%9C%BA%E8%A1%A5%E4%B8%81%2C%E8%AE%BE%E7%BD%AE%E9%A1%B5&downloadUrl=https%3A%2F%2Fgithub.com%2Fjayceoncynical%2Fdsh-purge%2Freleases%2Flatest%2Fdownload%2Fdsh-purge-2.0.3.zip"><strong>Install in desktop client</strong></a>
+  <a href="dsh://plugin/install?id=dsh-purge&name=dsh-purge&version=2.0.4&repo=jayceoncynical%2Fdsh-purge&permissions=%E7%B3%BB%E7%BB%9F%E6%8F%90%E7%A4%BA%E8%AF%8D%E6%B3%A8%E5%85%A5%2C%E6%9C%AC%E6%9C%BA%E8%A1%A5%E4%B8%81%2C%E8%AE%BE%E7%BD%AE%E9%A1%B5&downloadUrl=https%3A%2F%2Fgithub.com%2Fjayceoncynical%2Fdsh-purge%2Freleases%2Flatest%2Fdownload%2Fdsh-purge-2.0.4.zip"><strong>Install in desktop client</strong></a>
 </p>
 
 ### After the command: three steps
@@ -167,13 +167,13 @@ If `dsh` is not on PATH, tell the user and stop. If this directory is already a 
 **Web (official `dsh web`)**
 
 ```sh
-dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-2.0.3.tar.gz
+dsh plugin --profile web add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-2.0.4.tar.gz
 ```
 
 **Desktop (official EXE)**
 
 ```sh
-dsh plugin --profile desktop add https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-2.0.3.tar.gz
+# The desktop app owns its profile; the CLI cannot install into it. Use the deep link above or the Manual install section.
 ```
 
 After the commands finish, tell the user to fully quit and restart `dsh web`, and to quit the desktop tray then reopen the EXE. On each host, open **dsh-purge** beside the session title and **Apply** on **Clean**. Then stop.
@@ -214,7 +214,7 @@ $cands | Select-Object -Unique | Where-Object { $_ -and (Test-Path (Join-Path $_
 git clone https://github.com/jayceoncynical/dsh-purge.git "$DSH_HOME/plugins/dsh-purge"
 ```
 
-Without git: download [dsh-purge-2.0.3.tar.gz](https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-2.0.3.tar.gz), extract it, rename `dsh-purge-2.0.3` to `dsh-purge`, and place the whole folder under `plugins`. If you already have a copy, copy the entire tree — not a few `.js` files.
+Without git: download [dsh-purge-2.0.4.tar.gz](https://github.com/jayceoncynical/dsh-purge/releases/latest/download/dsh-purge-2.0.4.tar.gz), extract it, rename `dsh-purge-2.0.4` to `dsh-purge`, and place the whole folder under `plugins`. If you already have a copy, copy the entire tree — not a few `.js` files.
 
 **3. Edit only that profile's `package.json` — back it up first.** Web → `$DSH_HOME/profiles/web/package.json`; desktop → `$DSH_HOME/profiles/desktop/package.json`. Add **only two things**, keeping every existing dependency and bundle:
 
@@ -349,7 +349,7 @@ dsh-purge --edit
 /purge status | apply | revert | uninstall | edit | help
 /rules list | use <id> | create <id> | delete <id> | reset | help
 /skills list | import <archive or folder> | create <id> [description] | delete <id> | help
-/rewind
+/rewind once | round
 
 # model tools
 purge_status   purge_apply   purge_revert
@@ -357,7 +357,7 @@ purge_status   purge_apply   purge_revert
 
 A successful Apply restarts to load the changed package files; you can also press Restart manually. The patch header offers stable and test lines. The test line follows the `beta` branch. "Switch to stable" installs master again and clears the pin. Picking an older version on the stable line pins that version; press Update to return to latest. Old test tags are no longer listed.
 
-"Rewind once" and "rewind previous turn" beside the input box follow the official `session.fork({ atSeq })`: the in-progress turn is withdrawn, a new session continues with the earlier context, the old session is archived, and that line returns to the input box, where sending re-injects. `/rewind` in chat does the same.
+"Rewind once" and "rewind previous turn" beside the input box follow the official `session.fork({ atSeq })`: the in-progress turn is withdrawn, a new session continues with the earlier context, the old session is archived, and that line returns to the input box, where sending re-injects. `/rewind once` or `/rewind round` in chat does the same.
 
 **When minimal / PTC disagrees with standard:** if a task runs in standard mode but is blocked in minimal or PTC, a `run_code` or plan guard line in the preset probably was not cleaned, or the built-in minimal lacks `agent-instructions`. Upgrade to **1.1.61+**, then **fully quit the host → Apply on Clean → let it restart → start a new chat**. Swapping the preset alone does not reapply, so the old process keeps the old patches.
 

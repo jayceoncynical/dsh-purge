@@ -1,6 +1,8 @@
 # 不上传
 node_modules/
 *.tgz
+dsh-purge-*.tar.gz
+dsh-purge-*.zip
 npm-debug.log*
 *.log
 .DS_Store
@@ -21,10 +23,6 @@ choirboy-prompt/
 /choirboy-prompt/
 _archive/
 频道推广手册/
-
-# 嵌入前的提示词原文
-lib/default-prompt-inject.md
-default-prompt-inject.md
 
 # 本机官方安装包、解包目录、拆出的压缩包
 /deepseek-harness-*.exe

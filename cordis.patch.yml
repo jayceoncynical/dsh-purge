@@ -35,9 +35,6 @@
     # 插件一旦写死 {{cwd}}，宿主删掉变量注册就会让整轮渲染抛
     # unknown prompt variable，消息直接发不出去。
 
-- id: dsh-purge
-  inject: [systemPrompt, tools]
-
 - insert:
     - id: dsh-purge
       name: 'dsh-purge'

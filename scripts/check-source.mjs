@@ -10,7 +10,7 @@ function collect(dir) {
     return entry.isDirectory() ? collect(file) : /\.(?:js|mjs)$/.test(entry.name) ? [file] : [];
   });
 }
-const files = ['lib', 'bin', 'scripts', 'tests'].flatMap((dir) => collect(path.join(root, dir)));
+const files = ['lib', 'bin', 'scripts', 'tests', 'presets'].flatMap((dir) => collect(path.join(root, dir)));
 files.push(path.join(root, 'client.js'));
 for (const file of files) {
   const result = spawnSync(process.execPath, ['--check', file], { stdio: 'inherit', windowsHide: true });
