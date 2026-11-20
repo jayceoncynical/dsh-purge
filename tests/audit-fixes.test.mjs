@@ -68,6 +68,12 @@ test("换包锁只在助手还在续心跳时才算进行中", () => {
   assert.equal(asarSwapLockIsLive(Number.NaN, now), false);
 });
 
+test("换包助手脚本必须是纯 ASCII（PS 5.1 按本地 ANSI 解码）", () => {
+  const script = asarRenameIdleScript();
+  const bad = script.split(/\r?\n/).filter((line) => /[^\x00-\x7F]/.test(line));
+  assert.deepEqual(bad, [], "生成的 PowerShell 脚本里不能有非 ASCII 字符");
+});
+
 test("换包助手：宿主不在时改名、清锁并拉起", { skip: process.platform !== "win32" }, () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "dsh-purge-asar-"));
   const asar = path.join(dir, "app.asar");

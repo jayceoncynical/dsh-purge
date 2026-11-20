@@ -8,7 +8,7 @@
 - **主重启路径失败时自动降级**：`restartOfficialHarness` 返回 `already`（标记或日志过期）时，之前会静默当成“已在重启”，实际什么都没发生。现在退回后台换包助手，仍然在宿主退出后改名并自动拉起。
 - **点「应用」自己重启**：密封桌面上应用成功后，插件直接排换包重启，不再依赖客户端点「重启」。补丁写进 `resources/app` → 宿主退出 → `app.asar` 改名 → 自动拉起 → 新宿主读到打过补丁的代码，全程无手动步骤。
 - **开机补排**：如果上次被打断，开机发现 `app.asar` 还在、解开树里补丁标记齐全，会自动补排一次换包，下次退出时完成。
-- **验证**：新增 `换包锁只在助手还在续心跳时才算进行中` 与 `换包助手：宿主不在时改名、清锁并拉起`（后者把真实助手脚本跑一遍，用假 `app.asar` 与假 exe 断言改名、`.bak` 保留、锁清理、宿主被拉起）；`npm run check:syntax` 87 文件、`npm run check:client` 产物一致、`npm test` 157 通过 / 1 跳过。
+- **验证**：新增 `换包锁只在助手还在续心跳时才算进行中` 与 `换包助手：宿主不在时改名、清锁并拉起`（后者把真实助手脚本跑一遍，用假 `app.asar` 与假 exe 断言改名、`.bak` 保留、锁清理、宿主被拉起）；另有断言保证生成的 PowerShell 脚本保持纯 ASCII —— Windows PowerShell 5.1 按本地 ANSI 解码，非 ASCII 注释在英文 locale 会直接语法错。`npm run check:syntax` 87 文件、`npm run check:client` 产物一致、`npm test` 158 通过 / 1 跳过。
 
 ## English
 
@@ -18,7 +18,7 @@
 - **Automatic fallback when the primary restart path bails**: `restartOfficialHarness` returning `already` (stale flag or log) used to be treated as success while nothing happened. It now falls back to the idle swap helper, which still renames and relaunches after the host exits.
 - **Apply restarts on its own**: on a sealed desktop host, a successful apply now schedules the swap restart directly instead of waiting for the client's restart button — patches go into `resources/app`, the host exits, `app.asar` is renamed, the host relaunches and reads patched code, with no manual step.
 - **Boot-time re-arm**: if an earlier swap was interrupted, a boot that finds `app.asar` still present with clean patch markers in the extracted tree schedules the swap again, to complete on the next quit.
-- **Verification**: new tests cover heartbeat liveness and an end-to-end run of the real helper script against a fake `app.asar` and fake exe (rename, `.bak` retained, lock cleared, host relaunched); `npm run check:syntax` 87 files, `npm run check:client` in sync, `npm test` 157 passing / 1 skipped.
+- **Verification**: new tests cover heartbeat liveness and an end-to-end run of the real helper script against a fake `app.asar` and fake exe (rename, `.bak` retained, lock cleared, host relaunched); another assertion keeps the generated PowerShell script pure ASCII — Windows PowerShell 5.1 decodes it with the local ANSI code page, so non-ASCII comments break parsing on an English locale. `npm run check:syntax` 87 files, `npm run check:client` in sync, `npm test` 158 passing / 1 skipped.
 
 ---
 # 2.0.4
